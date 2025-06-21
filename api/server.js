@@ -11,7 +11,7 @@ fastify.register(require('fastify-multipart'));
 
 fastify.get('/ping', async () => ({ pong: 'it works!' }));
 
-fastify.listen({ port: process.env.PORT || 3001 }, (err) => {
+fastify.listen({ port: process.env.PORT || 3001 , host: "0.0.0.0"}, (err) => {
   if (err) {
     fastify.log.error(err);
     process.exit(1);

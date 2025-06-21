@@ -1,18 +1,16 @@
-version: "3.8"
-
 services:
   api:
-    build: ../api
+    build: ./api
     ports:
       - "3001:3001"
     env_file:
-      - ../api/.env
+      - ./api/.env
     depends_on:
       - mongo
       - rabbitmq
 
   worker:
-    build: ../worker
+    build: ./worker
     depends_on:
       - rabbitmq
 
@@ -29,9 +27,9 @@ services:
 
   minio:
     image: minio/minio
-    command: server /data
+    command: server --address ":9000" /data
     environment:
-      MINIO_ACCESS_KEY: minio
-      MINIO_SECRET_KEY: minio123
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minio123
     ports:
       - "9000:9000"
