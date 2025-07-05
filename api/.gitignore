@@ -1,4 +1,10 @@
-node_modules
-.env.*  
-dist
-.DS_Store
+# Node.js
+node_modules/
+dist/
+
+# Env files
+.env
+.env.*
+
+# Logs
+*.log
