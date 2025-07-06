@@ -10,7 +10,10 @@ interface User {
   photo: string | null;
 }
 
-const AuthContext = createContext<{ user: User | null; loading: boolean } | null>(null);
+const AuthContext = createContext<{
+  user: User | null;
+  loading: boolean;
+} | null>(null);
 
 import type { ReactNode } from "react";
 
@@ -22,7 +25,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (firebaseUser) {
         const token = await getIdToken(firebaseUser);
         const { email, displayName, uid, photoURL } = firebaseUser;
-        const userData = { email, name: displayName, uid, photo: photoURL, token };
+        const userData = {
+          email,
+          name: displayName,
+          uid,
+          photo: photoURL,
+          token,
+        };
 
         setUser(userData);
         localStorage.setItem("token", token);
