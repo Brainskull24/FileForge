@@ -1,7 +1,5 @@
 from fastapi import FastAPI
+from app.api.routes import convert_routes
 
-app = FastAPI()
-
-@app.get("/ping")
-def ping():
-    return {"pong": "worker is alive"}
+app = FastAPI(title="FileForge Conversion API")
+app.include_router(convert_routes.router, prefix="/api/v1/convert")
