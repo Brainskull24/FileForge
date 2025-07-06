@@ -5,18 +5,22 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/auth";
 import { signOut } from "firebase/auth";
 import { auth } from "../../lib/firebase";
+import api from "../../lib/axios";
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
-  const auth1 = useAuth();
-  const user = auth1?.user;
-
+  const { authType, logout, user } = useAuth();
+  
   const handleLogout = async () => {
     try {
-      await signOut(auth);
-      localStorage.clear();
-      window.location.href = "/";
+      if (authType === "firebase") {
+        await signOut(auth);
+      } else if (authType === "custom") {
+        await api.post("/auth/logout");
+      }
+      logout();
+      navigate("/");
     } catch (error) {
       console.error("Logout failed:", error);
       alert("Failed to logout. Try again.");

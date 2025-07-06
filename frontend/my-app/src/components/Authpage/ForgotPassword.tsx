@@ -1,31 +1,55 @@
-import type React from "react"
-import { useState } from "react"
-import { Card, CardContent } from "../ui/card"
-import { Label } from "../ui/label"
-import { Input } from "../ui/input"
-import { Button } from "../ui/button"
-import { Code2, Mail, Zap, Database, Shield, Sparkles, ArrowLeft, FileText, Loader2, CheckCircle } from "lucide-react"
+import type React from "react";
+import { useState } from "react";
+import { Card, CardContent } from "../ui/card";
+import { Label } from "../ui/label";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
+import {
+  Code2,
+  Mail,
+  Zap,
+  Database,
+  Shield,
+  Sparkles,
+  ArrowLeft,
+  FileText,
+  Loader2,
+  CheckCircle,
+} from "lucide-react";
+import api from "../../lib/axios";
 
 const ForgotPasswordPage: React.FC = () => {
-  const [loading, setLoading] = useState(false)
-  const [email, setEmail] = useState("")
-  const [emailSent, setEmailSent] = useState(false)
+  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [emailSent, setEmailSent] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-
-    // Simulate API call
-    setTimeout(() => {
-      setLoading(false)
-      setEmailSent(true)
-    }, 2000)
-  }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+  
+    try {
+      const res = await api.post("/auth/forgot-password", {email}, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+  
+      if (res.data.message === "Reset link sent") {
+        setEmailSent(true);
+      } else {
+        throw new Error("Failed to send reset link");
+      }
+    } catch (error: any) {
+      alert(error.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleBackToLogin = () => {
     // Navigate back to login page
-    window.location.href = "/login"
-  }
+    window.location.href = "/login";
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-4 overflow-hidden">
@@ -81,14 +105,19 @@ const ForgotPasswordPage: React.FC = () => {
                 {/* Icon + Name Inline */}
                 <div className="flex items-center justify-center gap-2">
                   <FileText className="h-8 w-8 text-indigo-600" />
-                  <h1 className="text-3xl font-bold text-gray-900">FileForge</h1>
+                  <h1 className="text-3xl font-bold text-gray-900">
+                    FileForge
+                  </h1>
                 </div>
 
                 {/* Title and Subtitle */}
                 <div className="space-y-2">
-                  <h2 className="text-2xl font-bold text-gray-900">Reset Password</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    Reset Password
+                  </h2>
                   <p className="text-sm text-slate-600/80 font-medium">
-                    Enter your email address and we'll send you a link to reset your password
+                    Enter your email address and we'll send you a link to reset
+                    your password
                   </p>
                 </div>
               </div>
@@ -96,7 +125,10 @@ const ForgotPasswordPage: React.FC = () => {
               {/* Enhanced Form */}
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-semibold text-slate-700">
+                  <Label
+                    htmlFor="email"
+                    className="text-sm font-semibold text-slate-700"
+                  >
                     Email Address
                   </Label>
                   <Input
@@ -143,17 +175,26 @@ const ForgotPasswordPage: React.FC = () => {
                 {/* Icon + Name Inline */}
                 <div className="flex items-center justify-center gap-2">
                   <FileText className="h-8 w-8 text-indigo-600" />
-                  <h1 className="text-3xl font-bold text-gray-900">FileForge</h1>
+                  <h1 className="text-3xl font-bold text-gray-900">
+                    FileForge
+                  </h1>
                 </div>
 
                 {/* Success Message */}
                 <div className="space-y-3">
-                  <h2 className="text-2xl font-bold text-gray-900">Check Your Email</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    Check Your Email
+                  </h2>
                   <div className="space-y-2">
-                    <p className="text-sm text-slate-600 font-medium">We've sent a password reset link to:</p>
-                    <p className="text-sm font-semibold text-blue-600 bg-blue-50 px-3 py-2 rounded-lg">{email}</p>
+                    <p className="text-sm text-slate-600 font-medium">
+                      We've sent a password reset link to:
+                    </p>
+                    <p className="text-sm font-semibold text-blue-600 bg-blue-50 px-3 py-2 rounded-lg">
+                      {email}
+                    </p>
                     <p className="text-xs text-slate-500">
-                      If you don't see the email, check your spam folder or try again with a different email address.
+                      If you don't see the email, check your spam folder or try
+                      again with a different email address.
                     </p>
                   </div>
                 </div>
@@ -170,8 +211,8 @@ const ForgotPasswordPage: React.FC = () => {
                   <Button
                     variant="outline"
                     onClick={() => {
-                      setEmailSent(false)
-                      setEmail("")
+                      setEmailSent(false);
+                      setEmail("");
                     }}
                     className="w-full h-12 rounded-xl font-semibold text-sm border-slate-200/60 bg-white/50 backdrop-blur-sm hover:bg-white/80 hover:border-slate-300 hover:shadow-md transition-all duration-300 transform hover:scale-[1.02]"
                   >
@@ -184,7 +225,7 @@ const ForgotPasswordPage: React.FC = () => {
         </CardContent>
       </Card>
     </div>
-  )
-}
+  );
+};
 
-export default ForgotPasswordPage
+export default ForgotPasswordPage;

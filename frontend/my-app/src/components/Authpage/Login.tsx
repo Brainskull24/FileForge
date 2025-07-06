@@ -1,3 +1,5 @@
+"use client";
+
 import type React from "react";
 import { useState } from "react";
 import { Card, CardContent } from "../ui/card";
@@ -21,85 +23,95 @@ import {
   Sparkles,
   ArrowLeft,
   FileText,
+  RefreshCw,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import api from "../../lib/axios";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/auth";
 
 const AuthPage: React.FC = () => {
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showVerification, setShowVerification] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
   const navigate = useNavigate();
+  const { setUser } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
     try {
-      const endpoint = mode === "login" ? "/auth/login" : "/auth/signup";
-      const res = await api.post(endpoint, { email, password });
+      if (mode === "login") {
+        const res = await api.post("/auth/login", { email, password });
+        const data = res.data;
 
-      const data = res.data;
-      console.log("Success:", data);
-
-      localStorage.setItem("token", data.token);
-      navigate("/convertor");
+        console.log("Login Success:", data);
+        setUser(data.user);
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("backendUser", JSON.stringify(data.user));
+        localStorage.setItem("authType", "custom");
+        navigate("/convertor");
+      } else {
+        // Signup flow
+        const res = await api.post("/auth/register", { name, email, password });
+        const data = res.data;
+        console.log("Signup Success:", data);
+        setShowVerification(true);
+      }
     } catch (error: any) {
-      const message = error?.response?.data?.message || "Something went wrong";
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        "Something went wrong";
       alert(message);
     } finally {
       setLoading(false);
     }
   };
 
-  // const handleSocial = async (providerName: string) => {
-  //   setLoading(true);
-  //   try {
-  //     const provider = providerName === "Google" ? googleProvider : githubProvider;
-  //     const result = await signInWithPopup(auth, provider);
-  //     const user = result.user;
-  
-  //     const res = await fetch("/api/auth/social-login", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({
-  //         email: user.email,
-  //         provider: providerName,
-  //       }),
-  //     });
-  
-  //     const data = await res.json();
-  //     if (!res.ok) throw new Error(data.message);
-  //     console.log("Social login success:", data);
-  
-  //   } catch (err: any) {
-  //     alert(err.message);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-  
+  const handleResendVerification = async () => {
+    setResendLoading(true);
+    try {
+      await api.post("/auth/resend-verification", { email });
+      alert("Verification email sent successfully!");
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        "Failed to resend email";
+      alert(message);
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
   const handleSocial = async (providerName: string) => {
     setLoading(true);
     try {
-      const provider = providerName === "Google" ? googleProvider : githubProvider;
+      const provider =
+        providerName === "Google" ? googleProvider : githubProvider;
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-  
       console.log("Firebase user:", user);
-      localStorage.setItem("user", JSON.stringify({
-        email: user.email,
-        name: user.displayName,
-        photo: user.photoURL,
-        uid: user.uid,
-        provider: providerName,
-      }));
-  
-      // Navigate directly
+
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          email: user.email,
+          name: user.displayName,
+          photo: user.photoURL,
+          uid: user.uid,
+          provider: providerName,
+        })
+      );
+
       navigate("/convertor");
-  
     } catch (err: any) {
       alert(err.message || "Authentication failed");
     } finally {
@@ -107,6 +119,99 @@ const AuthPage: React.FC = () => {
     }
   };
 
+  // Email verification screen
+  if (showVerification) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-4 overflow-hidden">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <Code2 className="absolute top-8 left-8 h-32 w-32 text-blue-200/20 animate-pulse" />
+          <Database
+            className="absolute bottom-12 right-16 h-28 w-28 text-indigo-200/25 animate-bounce"
+            style={{ animationDuration: "3s" }}
+          />
+          <Zap
+            className="absolute top-16 right-12 h-20 w-20 text-purple-200/30 animate-pulse"
+            style={{ animationDelay: "1s" }}
+          />
+        </div>
+
+        <Card className="relative max-w-md w-full bg-white/70 backdrop-blur-xl shadow-2xl border border-white/20">
+          <CardContent className="relative p-8">
+            {/* Back Button */}
+            <div className="absolute top-4 left-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowVerification(false)}
+                className="flex items-center gap-2 text-slate-600 hover:text-slate-800 hover:bg-white/50 rounded-lg transition-all duration-200"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                <span className="text-sm font-medium">Back</span>
+              </Button>
+            </div>
+
+            {/* Header */}
+            <div className="text-center space-y-4 mb-8 mt-8">
+              <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                <Mail className="h-8 w-8 text-green-600" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                  Check Your Email
+                </h1>
+                <p className="text-sm text-slate-600">
+                  We've sent a verification link to
+                </p>
+                <p className="text-sm font-semibold text-blue-600">{email}</p>
+              </div>
+            </div>
+
+            {/* Instructions */}
+            <div className="space-y-4 mb-8">
+              <div className="bg-blue-50/50 rounded-lg p-4 border border-blue-200/30">
+                <p className="text-sm text-slate-700 leading-relaxed">
+                  Click the verification link in your email to activate your
+                  account. The link will expire in 24 hours.
+                </p>
+              </div>
+
+              <div className="text-center">
+                <p className="text-sm text-slate-600 mb-4">
+                  Didn't receive the email? Check your spam folder or
+                </p>
+                <Button
+                  onClick={handleResendVerification}
+                  disabled={resendLoading}
+                  variant="outline"
+                  className="w-full h-11 rounded-xl font-semibold border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-all duration-300 bg-transparent"
+                >
+                  {resendLoading ? (
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Sending...
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <RefreshCw className="h-4 w-4" />
+                      Resend Verification Email
+                    </div>
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="text-center">
+              <p className="text-xs text-slate-500">
+                Having trouble? Contact our support team
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-4 overflow-hidden">
@@ -141,7 +246,6 @@ const AuthPage: React.FC = () => {
       {/* Enhanced Glassmorphic Card */}
       <Card className="relative max-w-md w-full bg-white/70 backdrop-blur-xl shadow-2xl border border-white/20 transition-all duration-500 hover:shadow-3xl hover:bg-white/75">
         <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent rounded-lg" />
-
         <CardContent className="relative p-8">
           {/* Back to Homepage Button */}
           <div className="absolute top-4 left-4">
@@ -159,12 +263,10 @@ const AuthPage: React.FC = () => {
           {/* Enhanced Header */}
           <div className="text-center space-y-3 mb-8 mt-8">
             {/* Icon + Name Inline */}
-
             <div className="flex items-center justify-center gap-2">
               <FileText className="h-8 w-8 text-indigo-600" />
               <h1 className="text-3xl font-bold text-gray-900">FileForge</h1>
             </div>
-
             {/* Subtitle */}
             <p className="text-sm text-slate-600/80 font-medium">
               {mode === "login"
@@ -197,6 +299,26 @@ const AuthPage: React.FC = () => {
 
           {/* Enhanced Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
+            {mode === "signup" && (
+              <div className="space-y-2">
+                <Label
+                  htmlFor="name"
+                  className="text-sm font-semibold text-slate-700"
+                >
+                  Full Name
+                </Label>
+                <Input
+                  id="name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="h-12 rounded-xl border-slate-200/60 bg-white/50 backdrop-blur-sm focus:border-blue-500 focus:ring-blue-500/20 focus:bg-white/80 transition-all duration-300 placeholder:text-slate-400"
+                  placeholder="Enter your full name"
+                  required
+                />
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label
                 htmlFor="email"

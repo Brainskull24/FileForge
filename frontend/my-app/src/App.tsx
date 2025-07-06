@@ -18,11 +18,17 @@ import ForgotPasswordPage from "./components/Authpage/ForgotPassword";
 
 import ProtectedRoute from "./routes/ProtectedRoute";
 import PublicRoute from "./routes/PublicRoute";
+import VerificationFailed from "./components/Authpage/VerifyFailed";
+import VerificationSuccess from "./components/Authpage/Verified";
+import ResetPasswordPage from "./components/Authpage/ResetPassword";
 
 function App() {
   return (
     <Routes>
       <Route path="/" element={<Homepage />} />
+      <Route path="/verify-failed" element={<VerificationFailed />} />
+      <Route path="/verified" element={<VerificationSuccess />} />
+
       <Route
         path="/login"
         element={
@@ -32,6 +38,7 @@ function App() {
         }
       />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/pricing" element={<PricingPage />} />
       <Route path="/terms" element={<TermsOfService />} />
       <Route path="/policy" element={<SecurityPrivacyPage />} />
