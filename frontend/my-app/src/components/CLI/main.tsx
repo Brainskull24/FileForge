@@ -1,8 +1,14 @@
-import { useState } from "react"
-import { Badge } from "../ui/badge"
-import { Button } from "../ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs"
+import { useState } from "react";
+import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import {
   Copy,
   Download,
@@ -16,24 +22,26 @@ import {
   Shield,
   Cpu,
   HardDrive,
-} from "lucide-react"
+  ArrowLeft,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function CLIDocsPage() {
-  const [copiedCommand, setCopiedCommand] = useState<string | null>(null)
-
+  const [copiedCommand, setCopiedCommand] = useState<string | null>(null);
+  const router = useNavigate();
   const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
-    setCopiedCommand(text)
-    setTimeout(() => setCopiedCommand(null), 2000)
-  }
+    navigator.clipboard.writeText(text);
+    setCopiedCommand(text);
+    setTimeout(() => setCopiedCommand(null), 2000);
+  };
 
   const CodeBlock = ({
     children,
     copyable = true,
   }: {
-    children: string
-    language?: string
-    copyable?: boolean
+    children: string;
+    language?: string;
+    copyable?: boolean;
   }) => (
     <div className="relative group">
       <pre className="bg-gray-900 text-green-400 p-4 rounded-lg overflow-x-auto font-mono text-sm border border-gray-700">
@@ -46,15 +54,32 @@ export default function CLIDocsPage() {
           className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-green-400"
           onClick={() => copyToClipboard(children)}
         >
-          {copiedCommand === children ? <CheckCircle className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+          {copiedCommand === children ? (
+            <CheckCircle className="h-4 w-4" />
+          ) : (
+            <Copy className="h-4 w-4" />
+          )}
         </Button>
       )}
     </div>
-  )
+  );
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100">
       {/* Header */}
+
+      <div className="absolute top-4 right-4 z-10">
+        <Button
+          variant="outline"
+          className="text-black"
+          onClick={() => {
+            router("/");
+          }}
+        >
+          <ArrowLeft />
+          Back to Home
+        </Button>
+      </div>
       <div className="bg-gray-900 border-b border-gray-800">
         <div className="container mx-auto px-4 py-8">
           <div className="text-center space-y-4">
@@ -71,15 +96,25 @@ export default function CLIDocsPage() {
             </div>
 
             <div className="space-y-2">
-              <h1 className="text-3xl font-mono font-bold text-green-400">FileForge CLI</h1>
-              <p className="text-gray-400 text-lg">Command-line interface for file processing and encoding</p>
+              <h1 className="text-3xl font-mono font-bold text-green-400">
+                FileForge CLI
+              </h1>
+              <p className="text-gray-400 text-lg">
+                Command-line interface for file processing and encoding
+              </p>
             </div>
 
             <div className="flex items-center justify-center gap-4 flex-wrap">
-              <Badge variant="secondary" className="bg-green-900 text-green-100 border-green-700">
+              <Badge
+                variant="secondary"
+                className="bg-green-900 text-green-100 border-green-700"
+              >
                 v2.1.0
               </Badge>
-              <Badge variant="outline" className="border-green-600 text-green-400">
+              <Badge
+                variant="outline"
+                className="border-green-600 text-green-400"
+              >
                 Latest
               </Badge>
               <div className="flex items-center gap-2 text-sm text-gray-400">
@@ -128,18 +163,24 @@ export default function CLIDocsPage() {
             <TabsContent value="macos" className="space-y-4">
               <Card className="bg-gray-900 border-gray-700">
                 <CardHeader>
-                  <CardTitle className="text-green-400">macOS Installation</CardTitle>
+                  <CardTitle className="text-green-400">
+                    macOS Installation
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <h4 className="font-semibold mb-2 text-green-300">Homebrew (Recommended)</h4>
+                    <h4 className="font-semibold mb-2 text-green-300">
+                      Homebrew (Recommended)
+                    </h4>
                     <CodeBlock>
                       {`# Homebrew (Recommended)
 brew install fileforge/tap/fileforge-cli`}
                     </CodeBlock>
                   </div>
                   <div>
-                    <h4 className="font-semibold mb-2 text-green-300">Manual Download</h4>
+                    <h4 className="font-semibold mb-2 text-green-300">
+                      Manual Download
+                    </h4>
                     <CodeBlock>
                       {`# Manual Download
 curl -L https://github.com/fileforge/cli/releases/latest/download/fileforge-macos.tar.gz | tar xz
@@ -153,11 +194,15 @@ sudo mv fileforge /usr/local/bin/`}
             <TabsContent value="windows" className="space-y-4">
               <Card className="bg-gray-900 border-gray-700">
                 <CardHeader>
-                  <CardTitle className="text-green-400">Windows Installation</CardTitle>
+                  <CardTitle className="text-green-400">
+                    Windows Installation
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <h4 className="font-semibold mb-2 text-green-300">Chocolatey</h4>
+                    <h4 className="font-semibold mb-2 text-green-300">
+                      Chocolatey
+                    </h4>
                     <CodeBlock language="powershell">
                       {`# Chocolatey
 choco install fileforge-cli`}
@@ -172,7 +217,9 @@ scoop install fileforge`}
                     </CodeBlock>
                   </div>
                   <div>
-                    <h4 className="font-semibold mb-2 text-green-300">Manual Download</h4>
+                    <h4 className="font-semibold mb-2 text-green-300">
+                      Manual Download
+                    </h4>
                     <CodeBlock language="powershell">
                       {`# Manual Download
 # Download fileforge-windows.exe from releases`}
@@ -185,11 +232,15 @@ scoop install fileforge`}
             <TabsContent value="linux" className="space-y-4">
               <Card className="bg-gray-900 border-gray-700">
                 <CardHeader>
-                  <CardTitle className="text-green-400">Linux Installation</CardTitle>
+                  <CardTitle className="text-green-400">
+                    Linux Installation
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <h4 className="font-semibold mb-2 text-green-300">Debian/Ubuntu</h4>
+                    <h4 className="font-semibold mb-2 text-green-300">
+                      Debian/Ubuntu
+                    </h4>
                     <CodeBlock>
                       {`# Debian/Ubuntu
 wget https://github.com/fileforge/cli/releases/latest/download/fileforge_linux_amd64.deb
@@ -197,7 +248,9 @@ sudo dpkg -i fileforge_linux_amd64.deb`}
                     </CodeBlock>
                   </div>
                   <div>
-                    <h4 className="font-semibold mb-2 text-green-300">RPM-based (CentOS/RHEL/Fedora)</h4>
+                    <h4 className="font-semibold mb-2 text-green-300">
+                      RPM-based (CentOS/RHEL/Fedora)
+                    </h4>
                     <CodeBlock>
                       {`# RPM-based (CentOS/RHEL/Fedora)
 wget https://github.com/fileforge/cli/releases/latest/download/fileforge_linux_amd64.rpm
@@ -205,7 +258,9 @@ sudo rpm -i fileforge_linux_amd64.rpm`}
                     </CodeBlock>
                   </div>
                   <div>
-                    <h4 className="font-semibold mb-2 text-green-300">Binary Download</h4>
+                    <h4 className="font-semibold mb-2 text-green-300">
+                      Binary Download
+                    </h4>
                     <CodeBlock>
                       {`# Binary Download
 curl -L https://github.com/fileforge/cli/releases/latest/download/fileforge-linux.tar.gz | tar xz
@@ -314,7 +369,9 @@ fileforge convert <file> --to <format> --output <path>`}
             {/* Batch Processing Commands */}
             <Card className="bg-gray-900 border-gray-700">
               <CardHeader>
-                <CardTitle className="text-green-400">Batch Processing Commands</CardTitle>
+                <CardTitle className="text-green-400">
+                  Batch Processing Commands
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <CodeBlock>
@@ -329,7 +386,9 @@ fileforge batch --progress                 # Show progress bar`}
             {/* Workflow Commands */}
             <Card className="bg-gray-900 border-gray-700 md:col-span-2">
               <CardHeader>
-                <CardTitle className="text-green-400">Workflow Commands</CardTitle>
+                <CardTitle className="text-green-400">
+                  Workflow Commands
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <CodeBlock>
@@ -350,8 +409,12 @@ fileforge workflow delete <name>           # Delete workflow`}
 
           <Card className="bg-gray-900 border-gray-700">
             <CardHeader>
-              <CardTitle className="text-green-400">Configuration File</CardTitle>
-              <CardDescription className="text-gray-400">~/.fileforge/config.yml</CardDescription>
+              <CardTitle className="text-green-400">
+                Configuration File
+              </CardTitle>
+              <CardDescription className="text-gray-400">
+                ~/.fileforge/config.yml
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <CodeBlock language="yaml">
@@ -379,7 +442,9 @@ defaults:
           <div className="space-y-6">
             <Card className="bg-gray-900 border-gray-700">
               <CardHeader>
-                <CardTitle className="text-green-400">Batch Image Processing</CardTitle>
+                <CardTitle className="text-green-400">
+                  Batch Image Processing
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <CodeBlock>
@@ -395,7 +460,9 @@ fileforge batch convert photos/*.jpg \\
 
             <Card className="bg-gray-900 border-gray-700">
               <CardHeader>
-                <CardTitle className="text-green-400">Document Processing Pipeline</CardTitle>
+                <CardTitle className="text-green-400">
+                  Document Processing Pipeline
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <CodeBlock>
@@ -410,7 +477,9 @@ fileforge workflow run pdf-pipeline documents/*.pdf`}
 
             <Card className="bg-gray-900 border-gray-700">
               <CardHeader>
-                <CardTitle className="text-green-400">Automated Backup Encoding</CardTitle>
+                <CardTitle className="text-green-400">
+                  Automated Backup Encoding
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <CodeBlock>
@@ -514,7 +583,10 @@ CMD ["fileforge", "batch", "convert", "*.pdf", "--to", "png"]`}
                   <li>• Verify API key is correct</li>
                   <li>• Check network connectivity</li>
                   <li>
-                    • Clear cached credentials: <code className="bg-gray-800 px-1 rounded">fileforge auth logout</code>
+                    • Clear cached credentials:{" "}
+                    <code className="bg-gray-800 px-1 rounded">
+                      fileforge auth logout
+                    </code>
                   </li>
                 </ul>
               </CardContent>
@@ -532,7 +604,9 @@ CMD ["fileforge", "batch", "convert", "*.pdf", "--to", "png"]`}
                   <li>• Run with sudo for system directories</li>
                   <li>• Check file ownership and permissions</li>
                   <li>
-                    • Use <code className="bg-gray-800 px-1 rounded">--output</code> flag for custom paths
+                    • Use{" "}
+                    <code className="bg-gray-800 px-1 rounded">--output</code>{" "}
+                    flag for custom paths
                   </li>
                 </ul>
               </CardContent>
@@ -548,7 +622,10 @@ CMD ["fileforge", "batch", "convert", "*.pdf", "--to", "png"]`}
               <CardContent className="text-sm text-gray-300">
                 <ul className="space-y-2">
                   <li>
-                    • Increase timeout: <code className="bg-gray-800 px-1 rounded">--timeout 300</code>
+                    • Increase timeout:{" "}
+                    <code className="bg-gray-800 px-1 rounded">
+                      --timeout 300
+                    </code>
                   </li>
                   <li>• Use streaming for large files</li>
                   <li>• Consider batch processing</li>
@@ -566,7 +643,10 @@ CMD ["fileforge", "batch", "convert", "*.pdf", "--to", "png"]`}
               <CardContent className="text-sm text-gray-300">
                 <ul className="space-y-2">
                   <li>
-                    • Reduce parallel jobs: <code className="bg-gray-800 px-1 rounded">--parallel 2</code>
+                    • Reduce parallel jobs:{" "}
+                    <code className="bg-gray-800 px-1 rounded">
+                      --parallel 2
+                    </code>
                   </li>
                   <li>• Enable auto-cleanup in config</li>
                   <li>• Process files in smaller batches</li>
@@ -594,7 +674,9 @@ CMD ["fileforge", "batch", "convert", "*.pdf", "--to", "png"]`}
                   <Download className="h-4 w-4 mr-2" />
                   Download for macOS
                 </Button>
-                <p className="text-xs text-gray-400 font-mono">SHA256: a1b2c3d4...</p>
+                <p className="text-xs text-gray-400 font-mono">
+                  SHA256: a1b2c3d4...
+                </p>
               </CardContent>
             </Card>
 
@@ -608,7 +690,9 @@ CMD ["fileforge", "batch", "convert", "*.pdf", "--to", "png"]`}
                   <Download className="h-4 w-4 mr-2" />
                   Download for Windows
                 </Button>
-                <p className="text-xs text-gray-400 font-mono">SHA256: e5f6g7h8...</p>
+                <p className="text-xs text-gray-400 font-mono">
+                  SHA256: e5f6g7h8...
+                </p>
               </CardContent>
             </Card>
 
@@ -622,21 +706,32 @@ CMD ["fileforge", "batch", "convert", "*.pdf", "--to", "png"]`}
                   <Download className="h-4 w-4 mr-2" />
                   Download for Linux
                 </Button>
-                <p className="text-xs text-gray-400 font-mono">SHA256: i9j0k1l2...</p>
+                <p className="text-xs text-gray-400 font-mono">
+                  SHA256: i9j0k1l2...
+                </p>
               </CardContent>
             </Card>
           </div>
 
           <div className="mt-6 flex gap-4 justify-center">
-            <Button variant="outline" className="border-gray-600 text-gray-300 hover:bg-gray-800 bg-transparent">
+            <Button
+              variant="outline"
+              className="border-gray-600 text-gray-300 hover:bg-gray-800 bg-transparent"
+            >
               <Github className="h-4 w-4 mr-2" />
               View on GitHub
             </Button>
-            <Button variant="outline" className="border-gray-600 text-gray-300 hover:bg-gray-800 bg-transparent">
+            <Button
+              variant="outline"
+              className="border-gray-600 text-gray-300 hover:bg-gray-800 bg-transparent"
+            >
               <Info className="h-4 w-4 mr-2" />
               Release Notes
             </Button>
-            <Button variant="outline" className="border-gray-600 text-gray-300 hover:bg-gray-800 bg-transparent">
+            <Button
+              variant="outline"
+              className="border-gray-600 text-gray-300 hover:bg-gray-800 bg-transparent"
+            >
               Previous Versions
             </Button>
           </div>
@@ -663,5 +758,5 @@ CMD ["fileforge", "batch", "convert", "*.pdf", "--to", "png"]`}
         </div>
       </footer>
     </div>
-  )
+  );
 }

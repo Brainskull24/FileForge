@@ -42,6 +42,7 @@ import { Label } from "../ui/label"
 import { Textarea } from "../ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { Separator } from "../ui/separator"
+import { Link } from "react-router-dom"
 
 const quickHelpTopics = [
   { title: "Getting Started", icon: Rocket, description: "Learn the basics of FileForge" },
@@ -270,7 +271,13 @@ export default function HelpCenter() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
+      <div className="absolute top-4 right-4 z-10">
+        <Link to="/">
+          <Button variant="outline" size="sm" className="gap-2 bg-transparent">
+            ← Back to Home
+          </Button>
+        </Link>
+      </div>
       <div className="bg-gradient-to-b from-muted/50 to-background border-b">
         <div className="container mx-auto px-4 py-12">
           <div className="text-center max-w-4xl mx-auto">

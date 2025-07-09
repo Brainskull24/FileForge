@@ -9,19 +9,19 @@ const Features = () => {
       title: "Universal Encoding",
       description:
         "Base64, Hex, Binary, URL encoding and more formats supported",
-      badge: { text: "Free", variant: "secondary" as const },
+      // badge: { text: "Free", variant: "secondary" as const },
     },
     {
       icon: <FileText className="h-8 w-8" />,
       title: "File Conversion",
       description: "Convert between PDF, Word, Images, and 100+ file formats",
-      badge: { text: "Free", variant: "secondary" as const },
+      // badge: { text: "Free", variant: "secondary" as const },
     },
     {
       icon: <Cloud className="h-8 w-8" />,
       title: "Cloud Storage",
       description: "Secure cloud storage with automatic backups and sync",
-      badge: { text: "Account", variant: "secondary" as const },
+      // badge: { text: "Account", variant: "secondary" as const },
     },
     {
       icon: <Upload className="h-8 w-8" />,

@@ -59,7 +59,7 @@ const TextUtils = () => {
             <CardContent className="space-y-4">
               <div className="relative">
                 <Textarea
-                  className="h-24 pr-20"
+                  className="h-24 pr-10 resize-none"
                   placeholder="Try encoding this text..."
                   value={demoInput}
                   onChange={(e) => setDemoInput(e.target.value)}
@@ -78,7 +78,7 @@ const TextUtils = () => {
 
               <div className="relative bg-gray-100 p-3 rounded-md min-h-[60px]">
                 <p className="text-sm text-gray-600 mb-1">Encoded Output:</p>
-                <p className="font-mono text-sm break-all">
+                <p className="font-mono text-sm break-all h-20 overflow-auto">
                   {demoOutput || "Encoded text will appear here..."}
                 </p>
                 {demoOutput && (
@@ -115,7 +115,7 @@ const TextUtils = () => {
             <CardContent className="space-y-4">
               <div className="relative">
                 <Textarea
-                  className="h-24 pr-20"
+                  className="h-24 pr-10 resize-none"
                   placeholder="Paste Base64 string here..."
                   value={demoDecodeInput}
                   onChange={(e) => setDemoDecodeInput(e.target.value)}
@@ -134,7 +134,7 @@ const TextUtils = () => {
 
               <div className="relative bg-gray-100 p-3 rounded-md min-h-[60px]">
                 <p className="text-sm text-gray-600 mb-1">Decoded Output:</p>
-                <p className="font-mono text-sm break-all">
+                <p className="font-mono text-sm break-all h-20 overflow-auto">
                   {demoDecodeOutput || "Decoded text will appear here..."}
                 </p>
                 {demoDecodeOutput && (

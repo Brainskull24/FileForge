@@ -109,7 +109,7 @@ const Footer = () => {
                 </a>
               </li>
               <li>
-                <a href="/docs" className="hover:text-white">
+                <a href="/api/docs" className="hover:text-white">
                   API Access
                 </a>
               </li>
@@ -120,8 +120,8 @@ const Footer = () => {
             <h3 className="font-semibold mb-4">Company</h3>
             <ul className="space-y-2 text-gray-400">
               <li>
-                <Link to="/aboutus" className="hover:text-white">
-                  About Us
+                <Link to="/help" className="hover:text-white">
+                  Help & Support
                 </Link>
               </li>
               <li>

@@ -66,6 +66,12 @@ export default function Header() {
             >
               API Docs
             </Link>
+            <Link
+              to="/cli"
+              className="text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              CLI
+            </Link>
             {user ? (
               <>
                 <Button
