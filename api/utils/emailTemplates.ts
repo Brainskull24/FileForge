@@ -1,5 +1,3 @@
-// utils/emailTemplates.ts
-
 const defaultFooter = `
   <tr>
     <td style="padding: 24px 16px; font-size: 13px; background-color: #f1f5fb; color: #555; text-align: center; border-top: 4px solid #1a73e8;">
