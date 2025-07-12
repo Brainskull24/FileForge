@@ -51,7 +51,10 @@ export const verifyEmail = async (
   user.verified = true;
   user.verificationToken = "";
   await user.save();
-
+  res.cookie("email_verified", "true", {
+    maxAge: 1000 * 60, // 1 minute
+    httpOnly: false,
+  });
   res.redirect("http://localhost:5173/verified");
 };
 
