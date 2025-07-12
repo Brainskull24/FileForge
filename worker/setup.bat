@@ -1,12 +1,23 @@
 @echo off
-echo Creating virtual environment...
+echo ====================================
+echo [1/4] Creating virtual environment...
+echo ====================================
 python -m venv venv
 
-echo Activating virtual environment...
+echo ====================================
+echo [2/4] Activating virtual environment...
+echo ====================================
 call venv\Scripts\activate
 
-echo Installing dependencies...
+echo ====================================
+echo [3/4] Installing dependencies...
+echo ====================================
+pip install --upgrade pip
 pip install -r requirements.txt
 
-echo Running the FastAPI server...
+echo ====================================
+echo [4/4] Running the FastAPI server...
+echo ====================================
 uvicorn app.main:app --reload
+
+pause
