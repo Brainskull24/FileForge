@@ -15,27 +15,29 @@ import { Badge } from "../ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useAuth } from "../../context/auth";
 
-// import {
-//   Select,
-//   SelectContent,
-//   SelectItem,
-//   SelectTrigger,
-//   SelectValue,
-// } from "../ui/select";
-// import { toast } from "../../hooks/use-toast";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 export function ProfileTab() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatar, setAvatar] = useState("");
+
   const [formData, setFormData] = useState({
-    fullName: "NG",
-    phone: "2343342434",
-    language: "en",
+    fullName: "",
+    phone: "",
+    language: "",
     createdAt: "",
     lastLogin: "",
     accountType: "Free",
+    address: "",
+    role: "",
   });
 
   const { user } = useAuth();
@@ -54,42 +56,50 @@ export function ProfileTab() {
       }
     };
     fetchProfile();
-  }, []);
+  }, [user?.uid, user?.name]);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleAvatarUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const formData = new FormData();
-    formData.append("avatar", file);
-
-    try {
-      const { data } = await api.post("/user/avatar", formData);
-      setAvatar(data.avatarUrl);
-      alert("Avatar updated successfully!");
-    } catch (err) {
-      console.error("Avatar upload failed", err);
-      alert("Failed to upload avatar");
-    }
-  };
-
   const handleSaveChanges = async () => {
     setSaving(true);
+
+    const form = new FormData();
+    form.append("fullName", formData.fullName);
+    form.append("phone", formData.phone);
+    form.append("address", formData.address);
+    form.append("role", formData.role);
+    // Append other fields if needed
+
+    if (avatarFile) {
+      form.append("avatar", avatarFile);
+    }
+
     try {
-      await api.put("/user/profile", formData);
+      const { data } = await api.put("/user/profile", form, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      if (data.avatarUrl) {
+        setAvatar(data.avatarUrl);
+      }
+
       alert("Profile updated!");
     } catch (err) {
+      console.error("Failed to update profile", err);
       alert("Failed to update profile");
-      console.error(err);
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setAvatarFile(file);
+    setAvatar(URL.createObjectURL(file));
   };
 
   if (loading) {
@@ -122,7 +132,7 @@ export function ProfileTab() {
                   <input
                     type="file"
                     accept="image/*"
-                    onChange={handleAvatarUpload}
+                    onChange={handleAvatarChange}
                     className="absolute inset-0 opacity-0 cursor-pointer"
                   />
                 </Button>
@@ -158,11 +168,7 @@ export function ProfileTab() {
             <div>
               <Label htmlFor="email">Email Address</Label>
               <div className="flex gap-2">
-                <Input
-                  id="email"
-                  contentEditable={false}
-                  value={user?.email || ""}
-                />
+                <Input id="email" readOnly value={user?.email || ""} />
                 <Badge variant="secondary" className="flex items-center gap-1">
                   <CheckCircle className="h-3 w-3" />
                   Verified
@@ -177,23 +183,32 @@ export function ProfileTab() {
                 onChange={(e) => handleInputChange("phone", e.target.value)}
               />
             </div>
-            {/* <div>
-              <Label htmlFor="timezone">Time Zone</Label>
+            <div>
+              <Label htmlFor="address">Address</Label>
+              <Input
+                id="address"
+                value={formData.address || ""}
+                onChange={(e) => handleInputChange("address", e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="role">Role</Label>
               <Select
-                value={formData.timezone}
-                onValueChange={(value) => handleInputChange("timezone", value)}
+                value={formData.role}
+                onValueChange={(value) => handleInputChange("role", value)}
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select a role" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Asia/Kolkata">India (IST)</SelectItem>
-                  <SelectItem value="America/New_York">US - EST</SelectItem>
-                  <SelectItem value="Europe/London">London (GMT)</SelectItem>
-                  <SelectItem value="Asia/Tokyo">Tokyo (JST)</SelectItem>
+                  <SelectItem value="student">Student</SelectItem>
+                  <SelectItem value="working-professional">
+                    Working Professional
+                  </SelectItem>
+                  <SelectItem value="business-owner">Business Owner</SelectItem>
                 </SelectContent>
               </Select>
-            </div> */}
+            </div>
           </div>
           <div className="flex justify-end">
             <Button onClick={handleSaveChanges} disabled={saving}>

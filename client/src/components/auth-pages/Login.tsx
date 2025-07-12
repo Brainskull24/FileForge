@@ -22,6 +22,10 @@ import {
   ArrowLeft,
   FileText,
   RefreshCw,
+  MapPin,
+  Phone,
+  User,
+  Image,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import api from "../../lib/axios";
@@ -37,8 +41,58 @@ const AuthPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showVerification, setShowVerification] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
+  
+  // New fields for registration
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [profilePic, setProfilePic] = useState<File | null>(null);
+  const [profilePicPreview, setProfilePicPreview] = useState<string>("");
+  const [street, setStreet] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [country, setCountry] = useState("");
+  const [postalCode, setPostalCode] = useState("");
+  const [addressLoading, setAddressLoading] = useState(false);
+  
   const navigate = useNavigate();
   const { setUser } = useAuth();
+
+  const handleProfilePicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setProfilePic(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setProfilePicPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handlePostalCodeChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const code = e.target.value;
+    setPostalCode(code);
+    
+    if (code.length >= 5) {
+      setAddressLoading(true);
+      try {
+        // Using a free postal code API - you may need to replace with your preferred service
+        const response = await fetch(`https://api.zippopotam.us/us/${code}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.places && data.places.length > 0) {
+            const place = data.places[0];
+            setCity(place['place name'] || '');
+            setState(place['state abbreviation'] || '');
+            setCountry(data.country || 'US');
+          }
+        }
+      } catch (error) {
+        console.log('Could not fetch address data:', error);
+      } finally {
+        setAddressLoading(false);
+      }
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,8 +110,26 @@ const AuthPage: React.FC = () => {
         localStorage.setItem("authType", "custom");
         navigate("/convertor");
       } else {
-        // Signup flow
-        const res = await api.post("/auth/register", { name, email, password });
+        // Signup flow with new fields
+        const formData = new FormData();
+        formData.append("name", name);
+        formData.append("email", email);
+        formData.append("password", password);
+        formData.append("phoneNumber", phoneNumber);
+        formData.append("street", street);
+        formData.append("city", city);
+        formData.append("state", state);
+        formData.append("country", country);
+        formData.append("postalCode", postalCode);
+        if (profilePic) {
+          formData.append("profilePic", profilePic);
+        }
+
+        const res = await api.post("/auth/register", formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
         const data = res.data;
         console.log("Signup Success:", data);
         setShowVerification(true);
@@ -242,7 +314,7 @@ const AuthPage: React.FC = () => {
       </div>
 
       {/* Enhanced Glassmorphic Card */}
-      <Card className="relative max-w-md w-full bg-white/70 backdrop-blur-xl shadow-2xl border border-white/20 transition-all duration-500 hover:shadow-3xl hover:bg-white/75">
+      <Card className={`relative w-full bg-white/70 backdrop-blur-xl shadow-2xl border border-white/20 transition-all duration-500 hover:shadow-3xl hover:bg-white/75 ${mode === 'signup' ? 'max-w-4xl' : 'max-w-md'}`}>
         <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent rounded-lg" />
         <CardContent className="relative p-8">
           {/* Back to Homepage Button */}
@@ -297,84 +369,265 @@ const AuthPage: React.FC = () => {
 
           {/* Enhanced Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
-            {mode === "signup" && (
-              <div className="space-y-2">
-                <Label
-                  htmlFor="name"
-                  className="text-sm font-semibold text-slate-700"
-                >
-                  Full Name
-                </Label>
-                <Input
-                  id="name"
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="h-12 rounded-xl border-slate-200/60 bg-white/50 backdrop-blur-sm focus:border-blue-500 focus:ring-blue-500/20 focus:bg-white/80 transition-all duration-300 placeholder:text-slate-400"
-                  placeholder="Enter your full name"
-                  required
-                />
-              </div>
-            )}
+            {mode === "signup" ? (
+              <>
+                {/* Profile Picture Upload */}
+                <div className="flex flex-col items-center space-y-4 mb-6">
+                  <div className="relative">
+                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center border-2 border-white shadow-lg overflow-hidden">
+                      {profilePicPreview ? (
+                        <img
+                          src={profilePicPreview}
+                          alt="Profile Preview"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <User className="h-10 w-10 text-indigo-500" />
+                      )}
+                    </div>
+                    <label
+                      htmlFor="profilePic"
+                      className="absolute -bottom-1 -right-1 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-2 cursor-pointer transition-colors duration-200 shadow-lg"
+                    >
+                      <Image className="h-4 w-4" />
+                    </label>
+                    <input
+                      id="profilePic"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleProfilePicChange}
+                      className="hidden"
+                    />
+                  </div>
+                  <p className="text-xs text-slate-500 text-center">
+                    Upload your profile picture
+                  </p>
+                </div>
 
-            <div className="space-y-2">
-              <Label
-                htmlFor="email"
-                className="text-sm font-semibold text-slate-700"
-              >
-                Email Address
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="h-12 rounded-xl border-slate-200/60 bg-white/50 backdrop-blur-sm focus:border-blue-500 focus:ring-blue-500/20 focus:bg-white/80 transition-all duration-300 placeholder:text-slate-400"
-                placeholder="Enter your email"
-                required
-              />
-            </div>
+                {/* Two Column Grid Layout */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Left Column */}
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name" className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                        <User className="h-4 w-4" />
+                        Full Name
+                      </Label>
+                      <Input
+                        id="name"
+                        type="text"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        className="h-12 rounded-xl border-slate-200/60 bg-white/50 backdrop-blur-sm focus:border-blue-500 focus:ring-blue-500/20 focus:bg-white/80 transition-all duration-300 placeholder:text-slate-400"
+                        placeholder="Enter your full name"
+                        required
+                      />
+                    </div>
 
-            <div className="space-y-2">
-              <Label
-                htmlFor="password"
-                className="text-sm font-semibold text-slate-700"
-              >
-                Password
-              </Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="h-12 rounded-xl border-slate-200/60 bg-white/50 backdrop-blur-sm focus:border-blue-500 focus:ring-blue-500/20 focus:bg-white/80 transition-all duration-300 placeholder:text-slate-400 pr-12"
-                  placeholder="Enter your password"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors duration-200"
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-5 w-5" />
-                  ) : (
-                    <Eye className="h-5 w-5" />
-                  )}
-                </button>
-              </div>
-            </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="email" className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                        <Mail className="h-4 w-4" />
+                        Email Address
+                      </Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="h-12 rounded-xl border-slate-200/60 bg-white/50 backdrop-blur-sm focus:border-blue-500 focus:ring-blue-500/20 focus:bg-white/80 transition-all duration-300 placeholder:text-slate-400"
+                        placeholder="Enter your email"
+                        required
+                      />
+                    </div>
 
-            {mode === "login" && (
-              <div className="text-right">
-                <Link
-                  to="/forgot-password"
-                  className="text-sm font-semibold text-blue-600 hover:text-blue-700 hover:underline transition-colors duration-200"
-                >
-                  Forgot Password?
-                </Link>
-              </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="phoneNumber" className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                        <Phone className="h-4 w-4" />
+                        Phone Number
+                      </Label>
+                      <Input
+                        id="phoneNumber"
+                        type="tel"
+                        value={phoneNumber}
+                        onChange={(e) => setPhoneNumber(e.target.value)}
+                        className="h-12 rounded-xl border-slate-200/60 bg-white/50 backdrop-blur-sm focus:border-blue-500 focus:ring-blue-500/20 focus:bg-white/80 transition-all duration-300 placeholder:text-slate-400"
+                        placeholder="Enter your phone number"
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="password" className="text-sm font-semibold text-slate-700">
+                        Password
+                      </Label>
+                      <div className="relative">
+                        <Input
+                          id="password"
+                          type={showPassword ? "text" : "password"}
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="h-12 rounded-xl border-slate-200/60 bg-white/50 backdrop-blur-sm focus:border-blue-500 focus:ring-blue-500/20 focus:bg-white/80 transition-all duration-300 placeholder:text-slate-400 pr-12"
+                          placeholder="Enter your password"
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors duration-200"
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-5 w-5" />
+                          ) : (
+                            <Eye className="h-5 w-5" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Column - Address */}
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="postalCode" className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                        <MapPin className="h-4 w-4" />
+                        Postal Code
+                      </Label>
+                      <div className="relative">
+                        <Input
+                          id="postalCode"
+                          type="text"
+                          value={postalCode}
+                          onChange={handlePostalCodeChange}
+                          className="h-12 rounded-xl border-slate-200/60 bg-white/50 backdrop-blur-sm focus:border-blue-500 focus:ring-blue-500/20 focus:bg-white/80 transition-all duration-300 placeholder:text-slate-400"
+                          placeholder="Enter postal code"
+                          required
+                        />
+                        {addressLoading && (
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                            <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="street" className="text-sm font-semibold text-slate-700">
+                        Street Address
+                      </Label>
+                      <Input
+                        id="street"
+                        type="text"
+                        value={street}
+                        onChange={(e) => setStreet(e.target.value)}
+                        className="h-12 rounded-xl border-slate-200/60 bg-white/50 backdrop-blur-sm focus:border-blue-500 focus:ring-blue-500/20 focus:bg-white/80 transition-all duration-300 placeholder:text-slate-400"
+                        placeholder="Enter your street address"
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="city" className="text-sm font-semibold text-slate-700">
+                        City
+                      </Label>
+                      <Input
+                        id="city"
+                        type="text"
+                        value={city}
+                        onChange={(e) => setCity(e.target.value)}
+                        className="h-12 rounded-xl border-slate-200/60 bg-white/50 backdrop-blur-sm focus:border-blue-500 focus:ring-blue-500/20 focus:bg-white/80 transition-all duration-300 placeholder:text-slate-400"
+                        placeholder="Enter your city"
+                        required
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-2">
+                        <Label htmlFor="state" className="text-sm font-semibold text-slate-700">
+                          State
+                        </Label>
+                        <Input
+                          id="state"
+                          type="text"
+                          value={state}
+                          onChange={(e) => setState(e.target.value)}
+                          className="h-12 rounded-xl border-slate-200/60 bg-white/50 backdrop-blur-sm focus:border-blue-500 focus:ring-blue-500/20 focus:bg-white/80 transition-all duration-300 placeholder:text-slate-400"
+                          placeholder="State"
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="country" className="text-sm font-semibold text-slate-700">
+                          Country
+                        </Label>
+                        <Input
+                          id="country"
+                          type="text"
+                          value={country}
+                          onChange={(e) => setCountry(e.target.value)}
+                          className="h-12 rounded-xl border-slate-200/60 bg-white/50 backdrop-blur-sm focus:border-blue-500 focus:ring-blue-500/20 focus:bg-white/80 transition-all duration-300 placeholder:text-slate-400"
+                          placeholder="Country"
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Login Form */}
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-sm font-semibold text-slate-700">
+                    Email Address
+                  </Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="h-12 rounded-xl border-slate-200/60 bg-white/50 backdrop-blur-sm focus:border-blue-500 focus:ring-blue-500/20 focus:bg-white/80 transition-all duration-300 placeholder:text-slate-400"
+                    placeholder="Enter your email"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-sm font-semibold text-slate-700">
+                    Password
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="h-12 rounded-xl border-slate-200/60 bg-white/50 backdrop-blur-sm focus:border-blue-500 focus:ring-blue-500/20 focus:bg-white/80 transition-all duration-300 placeholder:text-slate-400 pr-12"
+                      placeholder="Enter your password"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors duration-200"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-5 w-5" />
+                      ) : (
+                        <Eye className="h-5 w-5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="text-right">
+                  <Link
+                    to="/forgot-password"
+                    className="text-sm font-semibold text-blue-600 hover:text-blue-700 hover:underline transition-colors duration-200"
+                  >
+                    Forgot Password?
+                  </Link>
+                </div>
+              </>
             )}
 
             <Button

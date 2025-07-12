@@ -9,12 +9,13 @@ import { useAuth } from "../../context/auth";
 
 const Footer = () => {
   const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
   const handleSubscribe = async () => {
+    alert(email);
     if (!email) return;
     if (!user) {
+      alert("Please log in to subscribe.");
       toast({
         title: "Not logged in",
         description: "Please log in to subscribe.",
@@ -23,6 +24,9 @@ const Footer = () => {
       return;
     }
     if (email !== user.email) {
+      alert(
+        "Email mismatch. Please use the email associated with your account."
+      );
       toast({
         title: "Email mismatch",
         description: "Please use the email associated with your account.",
@@ -30,32 +34,31 @@ const Footer = () => {
       });
       return;
     }
-    setLoading(true);
+    alert("Subscribing to newsletter...");
     try {
       const res = await api.post("/social/newsletter", { email });
-
+      alert("Subscribed successfully!");
       toast({
         title: "Subscribed!",
         description: res.data.message || "You're now subscribed.",
       });
-
       setEmail("");
     } catch (err: any) {
       if (err.response) {
+        alert("Subscription failed. Please try again.");
         toast({
           title: "Error",
           description: err.response.data.error || "Subscription failed.",
           variant: "destructive",
         });
       } else {
+        alert("Network error. Please try again later.");
         toast({
           title: "Network Error",
           description: "Try again later.",
           variant: "destructive",
         });
       }
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -106,12 +109,12 @@ const Footer = () => {
             <ul className="space-y-2 text-gray-400">
               <li>
                 <a href="/convertor" className="hover:text-white">
-                  Base64 Encoder
+                  Base64 Tool
                 </a>
               </li>
               <li>
                 <a href="/convertor" className="hover:text-white">
-                  File Converter
+                  Files Conversion
                 </a>
               </li>
               <li>
@@ -120,7 +123,7 @@ const Footer = () => {
                 </a>
               </li>
               <li>
-                <a href="/api/docs" className="hover:text-white">
+                <a href="/api-docs" className="hover:text-white">
                   API Access
                 </a>
               </li>
@@ -147,7 +150,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link to="/contact" className="hover:text-white">
-                  Contact
+                  Contact Us
                 </Link>
               </li>
             </ul>
@@ -166,7 +169,7 @@ const Footer = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 className="bg-gray-800 border-gray-700 text-white"
               />
-              <Button size="sm" onClick={handleSubscribe} disabled={loading}>
+              <Button size="sm" onClick={handleSubscribe}>
                 <Mail className="h-4 w-4" />
               </Button>
             </div>

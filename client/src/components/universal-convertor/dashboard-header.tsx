@@ -10,13 +10,19 @@ import {
 import { Progress } from "../ui/progress";
 import type { UserCredits } from "./main";
 import {
-  Bell,
   CreditCard,
   User,
   Settings,
-  HelpCircle,
   Crown,
+  FileCode,
+  TerminalSquare,
+  LogOut,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { signOut } from "firebase/auth";
+import api from "../../lib/axios";
+import { useAuth } from "../../context/auth";
+import { auth } from "../../lib/firebase";
 
 interface DashboardHeaderProps {
   userCredits: UserCredits;
@@ -24,6 +30,24 @@ interface DashboardHeaderProps {
 
 export function DashboardHeader({ userCredits }: DashboardHeaderProps) {
   const creditPercentage = (userCredits.current / userCredits.total) * 100;
+  const navigate = useNavigate();
+
+  const { authType, logout } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      if (authType === "firebase") {
+        await signOut(auth);
+      } else if (authType === "custom") {
+        await api.post("/auth/logout");
+      }
+      logout();
+      navigate("/");
+    } catch (error) {
+      console.error("Logout failed:", error);
+      alert("Failed to logout. Try again.");
+    }
+  };
 
   return (
     <header className="flex h-16 items-center justify-between border-b bg-background px-6">
@@ -55,15 +79,16 @@ export function DashboardHeader({ userCredits }: DashboardHeaderProps) {
         <Button
           size="sm"
           className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+          disabled
         >
           <Crown className="h-4 w-4 mr-2" />
           Upgrade to Pro
         </Button>
 
         {/* Notifications */}
-        <Button variant="ghost" size="sm">
+        {/* <Button variant="ghost" size="sm">
           <Bell className="h-4 w-4" />
-        </Button>
+        </Button> */}
 
         {/* User Menu */}
         <DropdownMenu>
@@ -73,17 +98,25 @@ export function DashboardHeader({ userCredits }: DashboardHeaderProps) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/account")}>
               <CreditCard className="mr-2 h-4 w-4" />
-              Buy Credits
+              My Account
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/processing-history")}>
               <Settings className="mr-2 h-4 w-4" />
-              Settings
+              Processing History
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              <HelpCircle className="mr-2 h-4 w-4" />
-              Help Center
+            <DropdownMenuItem onClick={() => navigate("/api-docs")}>
+              <FileCode className="mr-2 h-4 w-4" />
+              Explore APIs
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/cli")}>
+              <TerminalSquare className="mr-2 h-4 w-4" />
+              CLI Tool
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>
+              <LogOut className="mr-2 h-4 w-4 text-red-500" />
+              Logout
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

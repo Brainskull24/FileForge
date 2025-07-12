@@ -6,7 +6,6 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
-import { Button } from "../ui/button";
 import { Label } from "../ui/label";
 import {
   Select,
@@ -16,30 +15,11 @@ import {
   SelectValue,
 } from "../ui/select";
 import { Switch } from "../ui/switch";
-import { Separator } from "../ui/separator";
-import { Alert, AlertDescription } from "../ui/alert";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "../ui/dialog";
-import { Input } from "../ui/input";
-import {
-  Shield,
-  Download,
-  Trash2,
-  AlertTriangle,
-  Database,
-} from "lucide-react";
+import { Shield, Database } from "lucide-react";
 
 export function PrivacyTab() {
   const [privacySettings, setPrivacySettings] = useState({
-    dataRetention: "90",
-    processingHistory: "365",
+    processingHistory: "60",
     fileStorage: "30",
     analyticsOptOut: false,
     marketingCommunications: true,
@@ -47,7 +27,7 @@ export function PrivacyTab() {
     cookiePreferences: "essential",
   });
 
-  const [deleteConfirmation, setDeleteConfirmation] = useState("");
+  // const [deleteConfirmation, setDeleteConfirmation] = useState("");
 
   const handleSettingChange = (key: string, value: any) => {
     setPrivacySettings((prev) => ({ ...prev, [key]: value }));
@@ -69,28 +49,6 @@ export function PrivacyTab() {
         <CardContent className="space-y-4">
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="dataRetention">Data Retention Period</Label>
-              <Select
-                value={privacySettings.dataRetention}
-                onValueChange={(value) =>
-                  handleSettingChange("dataRetention", value)
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="30">30 days</SelectItem>
-                  <SelectItem value="90">90 days</SelectItem>
-                  <SelectItem value="365">1 year</SelectItem>
-                  <SelectItem value="forever">Keep forever</SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-sm text-muted-foreground">
-                How long to keep your account data and activity logs
-              </p>
-            </div>
-            <div className="space-y-2">
               <Label htmlFor="processingHistory">
                 Processing History Retention
               </Label>
@@ -105,9 +63,8 @@ export function PrivacyTab() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="30">30 days</SelectItem>
+                  <SelectItem value="60">60 days</SelectItem>
                   <SelectItem value="90">90 days</SelectItem>
-                  <SelectItem value="365">1 year</SelectItem>
-                  <SelectItem value="forever">Keep forever</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-sm text-muted-foreground">
@@ -138,7 +95,7 @@ export function PrivacyTab() {
             </div>
           </div>
 
-          <Separator />
+          {/* <Separator />
 
           <div className="space-y-4">
             <Button variant="outline" className="w-full bg-transparent">
@@ -149,7 +106,7 @@ export function PrivacyTab() {
               Export all your data including account information, processing
               history, and settings
             </p>
-          </div>
+          </div> */}
         </CardContent>
       </Card>
 
@@ -194,54 +151,12 @@ export function PrivacyTab() {
                 }
               />
             </div>
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <Label>Data Sharing with Partners</Label>
-                <p className="text-sm text-muted-foreground">
-                  Allow sharing anonymized data with trusted partners
-                </p>
-              </div>
-              <Switch
-                checked={privacySettings.dataSharing}
-                onCheckedChange={(checked) =>
-                  handleSettingChange("dataSharing", checked)
-                }
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="cookiePreferences">Cookie Preferences</Label>
-              <Select
-                value={privacySettings.cookiePreferences}
-                onValueChange={(value) =>
-                  handleSettingChange("cookiePreferences", value)
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="essential">
-                    Essential cookies only
-                  </SelectItem>
-                  <SelectItem value="functional">
-                    Essential + Functional
-                  </SelectItem>
-                  <SelectItem value="analytics">
-                    Essential + Functional + Analytics
-                  </SelectItem>
-                  <SelectItem value="all">All cookies</SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-sm text-muted-foreground">
-                Control which types of cookies we can use
-              </p>
-            </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Account Deletion */}
-      <Card className="border-destructive">
+      {/* <Card className="border-destructive">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-destructive">
             <Trash2 className="h-5 w-5" />
@@ -351,7 +266,7 @@ export function PrivacyTab() {
             </Dialog>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
     </div>
   );
 }

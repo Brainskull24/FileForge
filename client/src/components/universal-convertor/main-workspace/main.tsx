@@ -1,12 +1,13 @@
 "use client";
+
 import { useState, useCallback, useEffect } from "react";
 import { Badge } from "../../ui/badge";
-import type { UserCredits } from "../main";
 import { Info } from "lucide-react";
 import { toolConfigs } from "../../../data/toolConfigs";
 import { Welcome } from "../welcome-page";
 import { TextProcessor } from "./text-processor";
 import { FileProcessor } from "./file-processor";
+import type { UserCredits } from "../main";
 
 interface MainWorkspaceProps {
   selectedTool: string | null;
@@ -31,6 +32,13 @@ export function MainWorkspace({
   } | null>(null);
   const [showOutput, setShowOutput] = useState(false);
 
+  // Shared file state
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [fileMeta, setFileMeta] = useState<{ name: string; size: string; type: string } | null>(null);
+  const [base64Output, setBase64Output] = useState<string>("");
+  const [selectedFormat, setSelectedFormat] = useState("");
+  const [showEncodingOutput, setShowEncodingOutput] = useState(false);
+
   const currentTool = selectedTool
     ? toolConfigs[selectedTool as keyof typeof toolConfigs]
     : null;
@@ -42,15 +50,20 @@ export function MainWorkspace({
     setDownloadFilename(null);
     setOutputFileInfo(null);
     setShowOutput(false);
+
+    // Also reset file processor state
+    setUploadedFiles([]);
+    setFileMeta(null);
+    setBase64Output("");
+    setSelectedFormat("");
+    setShowEncodingOutput(false);
   }, []);
 
   useEffect(() => {
     resetState();
   }, [selectedTool, resetState]);
 
-  if (!selectedTool || !currentTool) {
-    return <Welcome />;
-  }
+  if (!selectedTool || !currentTool) return <Welcome />;
 
   return (
     <div className="flex-1 overflow-auto">
@@ -69,7 +82,7 @@ export function MainWorkspace({
           <p className="text-muted-foreground">{currentTool.description}</p>
         </div>
 
-        {/* Text-based tools */}
+        {/* Text Tool */}
         {currentTool.type === "text" && (
           <TextProcessor
             selectedTool={selectedTool}
@@ -89,12 +102,22 @@ export function MainWorkspace({
           />
         )}
 
-        {/* File-based tools */}
+        {/* File Tool */}
         {currentTool.type === "file" && (
           <FileProcessor
             selectedTool={selectedTool}
             currentTool={currentTool}
             onFileProcess={onFileProcess}
+            uploadedFiles={uploadedFiles}
+            setUploadedFiles={setUploadedFiles}
+            fileMeta={fileMeta}
+            setFileMeta={setFileMeta}
+            base64Output={base64Output}
+            setBase64Output={setBase64Output}
+            selectedFormat={selectedFormat}
+            setSelectedFormat={setSelectedFormat}
+            showEncodingOutput={showEncodingOutput}
+            setShowEncodingOutput={setShowEncodingOutput}
           />
         )}
       </div>

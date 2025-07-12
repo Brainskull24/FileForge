@@ -1,11 +1,8 @@
 "use client";
 
-import { useState, useCallback, type SetStateAction } from "react";
+import { useCallback } from "react";
 import { Button } from "../../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
-import { Label } from "../../ui/label";
-import { Slider } from "../../ui/slider";
-import { Checkbox } from "../../ui/checkbox";
 import { FileUploadArea } from "./file-upload-area";
 import { FormatSelector } from "./format-selector";
 import { UploadedFilesList } from "./uploaded-files-list";
@@ -13,58 +10,53 @@ import { Play, Copy, Download } from "lucide-react";
 import { FileEncodingLogic } from "./file-encoding";
 import { Textarea } from "../../ui/textarea";
 
-interface UploadedFile {
-  file: File;
-  preview?: string;
-}
-
 interface FileProcessorProps {
   selectedTool: string;
   currentTool: any;
   onFileProcess: (files: File[], operation: string) => void;
+  uploadedFiles: File[];
+  setUploadedFiles: React.Dispatch<React.SetStateAction<File[]>>;
+  fileMeta: { name: string; size: string; type: string } | null;
+  setFileMeta: React.Dispatch<React.SetStateAction<{ name: string; size: string; type: string } | null>>;
+  base64Output: string;
+  setBase64Output: React.Dispatch<React.SetStateAction<string>>;
+  selectedFormat: string;
+  setSelectedFormat: React.Dispatch<React.SetStateAction<string>>;
+  showEncodingOutput: boolean;
+  setShowEncodingOutput: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export function FileProcessor({
   selectedTool,
   currentTool,
   onFileProcess,
+  uploadedFiles,
+  setUploadedFiles,
+  fileMeta,
+  setFileMeta,
+  base64Output,
+  setBase64Output,
+  selectedFormat,
+  setSelectedFormat,
+  showEncodingOutput,
+  setShowEncodingOutput,
 }: FileProcessorProps) {
-  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
-  const [selectedFormat, setSelectedFormat] = useState("");
-  const [processingOptions, setProcessingOptions] = useState({
-    quality: [80],
-    maintainAspectRatio: true,
-    removeMetadata: false,
-  });
-
-  const [encodingOutput, setEncodingOutput] = useState<string>("");
-  const [showEncodingOutput, setShowEncodingOutput] = useState(false);
-
   const handleFiles = useCallback((files: File[]) => {
-    const newFiles: UploadedFile[] = files.map((file) => {
-      const uploadedFile: UploadedFile = { file };
+    const file = files[0]; // Only 1 file allowed
+    setUploadedFiles([file]);
+  }, [setUploadedFiles]);
 
-      // Create preview for images
-      if (file.type.startsWith("image/")) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          uploadedFile.preview = e.target?.result as string;
-          setUploadedFiles((prev) => [...prev]);
-        };
-        reader.readAsDataURL(file);
-      }
-      return uploadedFile;
-    });
-
-    setUploadedFiles((prev) => [...prev, ...newFiles]);
-  }, []);
+  const formatFileSize = (size: number): string => {
+    if (size < 1024) return `${size} B`;
+    if (size < 1024 * 1024) return `${(size / 1024).toFixed(2)} KB`;
+    return `${(size / (1024 * 1024)).toFixed(2)} MB`;
+  };
 
   const handleFileProcess = () => {
     if (uploadedFiles.length === 0) return;
 
-    const files = uploadedFiles.map((uf) => uf.file);
+    const file = uploadedFiles[0];
 
-    // Check if this is an encoding tool (file to text conversion)
     const encodingTools = [
       "file-to-base64",
       "image-to-base64",
@@ -75,37 +67,38 @@ export function FileProcessor({
     ];
 
     if (encodingTools.includes(selectedTool)) {
-      // Handle encoding (file to text)
-      FileEncodingLogic.encodeFiles(files, selectedTool)
-        .then((result: SetStateAction<string>) => {
-          setEncodingOutput(result);
+      FileEncodingLogic.encodeFiles([file], selectedTool)
+        .then((result: string) => {
+          const lines = result.split("\n");
+          const cleanStart = lines.findIndex((l) => l === "Clean Base64:");
+          const cleanBase64 = cleanStart !== -1 ? lines.slice(cleanStart + 1).join("\n") : "";
+
+          setFileMeta({
+            name: file.name,
+            size: formatFileSize(file.size),
+            type: file.type || "unknown",
+          });
+
+          setBase64Output(cleanBase64);
           setShowEncodingOutput(true);
         })
         .catch((error: { message: any }) => {
-          setEncodingOutput(`Error: ${error.message}`);
+          setBase64Output(`Error: ${error.message}`);
+          setFileMeta(null);
           setShowEncodingOutput(true);
         });
     } else {
-      // Handle regular file processing (file to file)
-      const operation = selectedFormat
-        ? `${selectedFormat}`
-        : currentTool?.name || "Process";
-      onFileProcess(files, operation);
+      const operation = selectedFormat || currentTool?.name || "Process";
+      onFileProcess([file], operation);
     }
 
     setUploadedFiles([]);
   };
 
-  const removeFile = (index: number) => {
-    setUploadedFiles((prev) => prev.filter((_, i) => i !== index));
-  };
-
   return (
     <div className="space-y-6">
-      {/* File Upload */}
       <FileUploadArea currentTool={currentTool} onFilesSelected={handleFiles} />
 
-      {/* Format Selection */}
       {currentTool.formats && (
         <FormatSelector
           selectedTool={selectedTool}
@@ -115,91 +108,50 @@ export function FileProcessor({
         />
       )}
 
-      {/* Processing Options */}
-      {uploadedFiles.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Processing Options</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {(selectedTool?.includes("image") ||
-              selectedTool?.includes("video")) && (
-              <div>
-                <Label>Quality: {processingOptions.quality[0]}%</Label>
-                <Slider
-                  value={processingOptions.quality}
-                  onValueChange={(value) =>
-                    setProcessingOptions({
-                      ...processingOptions,
-                      quality: value,
-                    })
-                  }
-                  max={100}
-                  min={10}
-                  step={10}
-                  className="w-full"
-                />
-              </div>
-            )}
+      <Button
+        onClick={handleFileProcess}
+        disabled={currentTool.formats && !selectedFormat}
+        className="w-full"
+      >
+        <Play className="h-4 w-4 mr-2" />
+        {currentTool.formats ? "Convert Files" : "Process Files"}
+      </Button>
 
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="aspect-ratio"
-                checked={processingOptions.maintainAspectRatio}
-                onCheckedChange={(checked) =>
-                  setProcessingOptions({
-                    ...processingOptions,
-                    maintainAspectRatio: checked as boolean,
-                  })
-                }
-              />
-              <Label htmlFor="aspect-ratio">Maintain aspect ratio</Label>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="metadata"
-                checked={processingOptions.removeMetadata}
-                onCheckedChange={(checked) =>
-                  setProcessingOptions({
-                    ...processingOptions,
-                    removeMetadata: checked as boolean,
-                  })
-                }
-              />
-              <Label htmlFor="metadata">Remove metadata</Label>
-            </div>
-
-            <Button
-              onClick={handleFileProcess}
-              disabled={currentTool.formats && !selectedFormat}
-              className="w-full"
-            >
-              <Play className="h-4 w-4 mr-2" />
-              {currentTool.formats ? "Convert Files" : "Process Files"}
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Encoding Output */}
       {showEncodingOutput && (
         <Card>
           <CardHeader>
             <CardTitle>Encoded Output</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {fileMeta && (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+                <div>
+                  <strong>File Name:</strong>
+                  <p className="text-muted-foreground truncate max-w-[200px]">{fileMeta.name}</p>
+                </div>
+                <div>
+                  <strong>File Size:</strong>
+                  <p className="text-muted-foreground">{fileMeta.size}</p>
+                </div>
+                <div>
+                  <strong>File Type:</strong>
+                  <p className="text-muted-foreground">{fileMeta.type}</p>
+                </div>
+              </div>
+            )}
+
             <Textarea
-              value={encodingOutput}
+              value={base64Output}
               readOnly
               className="min-h-[200px] font-mono resize-none"
-              placeholder="Encoded output will appear here..."
+              placeholder="Clean Base64 will appear here..."
             />
+
             <div className="flex gap-2">
               <Button
                 variant="outline"
-                onClick={() => navigator.clipboard.writeText(encodingOutput)}
-                disabled={!encodingOutput}
+                onClick={() => navigator.clipboard.writeText(base64Output)}
+                disabled={!base64Output}
                 className="flex-1"
               >
                 <Copy className="h-4 w-4 mr-2" />
@@ -208,17 +160,15 @@ export function FileProcessor({
               <Button
                 variant="outline"
                 onClick={() => {
-                  const blob = new Blob([encodingOutput], {
-                    type: "text/plain",
-                  });
+                  const blob = new Blob([base64Output], { type: "text/plain" });
                   const url = URL.createObjectURL(blob);
                   const a = document.createElement("a");
                   a.href = url;
-                  a.download = `encoded-output.txt`;
+                  a.download = "encoded-output.txt";
                   a.click();
                   URL.revokeObjectURL(url);
                 }}
-                disabled={!encodingOutput}
+                disabled={!base64Output}
                 className="flex-1"
               >
                 <Download className="h-4 w-4 mr-2" />
@@ -229,11 +179,10 @@ export function FileProcessor({
         </Card>
       )}
 
-      {/* Uploaded Files List */}
       {uploadedFiles.length > 0 && (
         <UploadedFilesList
-          uploadedFiles={uploadedFiles}
-          onRemoveFile={removeFile}
+          uploadedFiles={uploadedFiles.map((file) => ({ file }))}
+          onRemoveFile={() => setUploadedFiles([])}
         />
       )}
     </div>
