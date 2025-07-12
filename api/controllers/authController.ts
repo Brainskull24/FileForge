@@ -1,49 +1,64 @@
-// authController.ts
 import { Request, Response } from "express";
-import User from "../models/user";
+import { UserModel } from "../models/userModel";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import { generateToken } from "../utils/jwt";
 import { sendEmail } from "../utils/sendMail";
-import crypto from "crypto";
 import {
   getVerificationEmailHtml,
   getResetPasswordEmailHtml,
 } from "../utils/emailTemplates";
 
 export const register = async (req: Request, res: Response): Promise<void> => {
-  const { name, email, password } = req.body;
-  const existing = await User.findOne({ email });
+  const {
+    name,
+    email,
+    password,
+    phone,
+    address,
+    profilePicture,
+  } = req.body;
+
+  const existing = await UserModel.findOne({ email });
   if (existing) {
     console.log("Email already in use:", email);
     res.status(400).json({ error: "Email already in use" });
     return;
   }
+
   const hashed = await bcrypt.hash(password, 10);
   const token = crypto.randomBytes(20).toString("hex");
 
-  const user = new User({
+  const user = new UserModel({
     email,
     password: hashed,
     name,
+    phone,
+    address,
+    profilePicture,
     verificationToken: token,
   });
 
   const verificationLink = `http://localhost:4000/api/v1/auth/verify-email?token=${token}`;
-  const html = getVerificationEmailHtml(name, verificationLink);
+  const html = getVerificationEmailHtml(name || "User", verificationLink);
 
   await sendEmail(email, "Verify Email Address", html);
   await user.save();
   res.status(201).json({ message: "Registered. Please verify email." });
 };
 
-export const verifyEmail = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const verifyEmail = async (req: Request, res: Response): Promise<void> => {
   const { token } = req.query;
-  const user = await User.findOne({ verificationToken: token });
+  const user = await UserModel.findOne({ verificationToken: token });
 
   if (!user) {
+    // Return JSON instead of redirect if CLI/curl
+    const acceptHeader = req.headers["accept"];
+    if (acceptHeader && acceptHeader.includes("application/json")) {
+      res.status(404).json({ error: "Invalid or expired token" });
+      return;
+    }
+
     res.redirect("http://localhost:5173/verify-failed");
     return;
   }
@@ -51,27 +66,34 @@ export const verifyEmail = async (
   user.verified = true;
   user.verificationToken = "";
   await user.save();
+
+  const acceptHeader = req.headers["accept"];
+  if (acceptHeader && acceptHeader.includes("application/json")) {
+    res.json({ message: "Email verified successfully", email: user.email });
+    return;
+  }
+
   res.cookie("email_verified", "true", {
-    maxAge: 1000 * 60, // 1 minute
+    maxAge: 1000 * 60,
     httpOnly: false,
   });
   res.redirect("http://localhost:5173/verified");
 };
 
-export const resendVerification = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+
+export const resendVerification = async (req: Request, res: Response): Promise<void> => {
   const { email } = req.body;
-  const user = await User.findOne({ email });
+  const user = await UserModel.findOne({ email });
   if (!user) {
     res.status(404).json({ error: "User not found" });
     return;
   }
+
   if (user.verified) {
     res.status(400).json({ error: "Already verified" });
     return;
   }
+
   const token = crypto.randomBytes(20).toString("hex");
   user.verificationToken = token;
   await user.save();
@@ -85,19 +107,18 @@ export const resendVerification = async (
 
 export const login = async (req: Request, res: Response): Promise<void> => {
   const { email, password } = req.body;
-  const user = await User.findOne({ email });
-  if (
-    !user ||
-    !user.password ||
-    !(await bcrypt.compare(password, user.password))
-  ) {
+  const user = await UserModel.findOne({ email }).lean();
+
+  if (!user || !user.password || !(await bcrypt.compare(password, user.password))) {
     res.status(400).json({ error: "Invalid credentials" });
     return;
   }
+
   if (!user.verified) {
     res.status(403).json({ error: "Email not verified" });
     return;
   }
+
   const token = generateToken({ userId: user._id });
   res.json({
     token,
@@ -105,7 +126,12 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     user: {
       id: user._id,
       email: user.email,
-      name: `${user.name}`,
+      name: user.name,
+      profilePicture: user.profilePicture || null,
+      phone: user.phone || "",
+      address: user.address || {},
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
       verified: user.verified,
     },
   });
@@ -115,16 +141,15 @@ export const logout = async (_req: Request, res: Response): Promise<void> => {
   res.json({ message: "Logged out" });
 };
 
-export const forgotPassword = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const forgotPassword = async (req: Request, res: Response): Promise<void> => {
   const { email } = req.body;
-  const user = await User.findOne({ email });
+  const user = await UserModel.findOne({ email });
+
   if (!user) {
     res.status(404).json({ error: "User not found" });
     return;
   }
+
   const token = crypto.randomBytes(20).toString("hex");
   user.resetToken = token;
   await user.save();
@@ -136,19 +161,19 @@ export const forgotPassword = async (
   res.json({ message: "Reset link sent" });
 };
 
-export const resetPassword = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
+export const resetPassword = async (req: Request, res: Response): Promise<void> => {
   const { token } = req.query;
   const { password } = req.body;
-  const user = await User.findOne({ resetToken: token });
+  const user = await UserModel.findOne({ resetToken: token });
+
   if (!user) {
     res.status(400).json({ error: "Invalid token" });
     return;
   }
+
   user.password = await bcrypt.hash(password, 10);
   user.resetToken = "";
   await user.save();
+
   res.json({ message: "Password updated" });
 };
