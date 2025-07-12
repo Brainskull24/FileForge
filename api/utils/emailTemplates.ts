@@ -1,6 +1,6 @@
 const defaultFooter = `
   <tr>
-    <td style="padding: 24px 16px; font-size: 13px; background-color: #f1f5fb; color: #555; text-align: center; border-top: 4px solid #1a73e8;">
+    <td style="padding: 24px 16px; font-size: 13px; background-color: #f1f5fb; color: #555; text-align: center; border-top: 4px solid #4338ca;">
       <p style="margin: 0; font-size: 13px; color: #666;">
         You are receiving this email because you registered on <strong>FileForge</strong>.<br />
         If this wasn’t you, please ignore this email or
@@ -21,8 +21,8 @@ export const getVerificationEmailHtml = (name: string, link: string): string => 
         <table width="600" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff; border-radius:10px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.05);">
           
           <!-- Header -->
-          <tr style="background-color: #1a73e8;">
-            <td style="padding: 24px; text-align: center; color: white;">
+          <tr>
+            <td style="padding: 24px; text-align: center; background: linear-gradient(to bottom right, #2563eb, #9333ea, #4338ca); color: white;">
               <h2 style="margin: 0; font-size: 24px;">FileForge</h2>
               <p style="margin: 4px 0 0; font-size: 14px;">Secure File Conversion & Sharing</p>
             </td>
@@ -35,7 +35,7 @@ export const getVerificationEmailHtml = (name: string, link: string): string => 
               <p>Thank you for registering with <strong>FileForge</strong>. Please verify your email by clicking the button below:</p>
 
               <div style="text-align: center; margin: 24px 0;">
-                <a href="${link}" style="padding: 14px 28px; background-color: #1a73e8; color: #fff; border-radius: 6px; text-decoration: none; font-weight: bold; display: inline-block;">
+                <a href="${link}" style="padding: 14px 28px; background: linear-gradient(to bottom right, #2563eb, #9333ea, #4338ca); color: #fff; border-radius: 6px; text-decoration: none; font-weight: bold; display: inline-block;">
                   Verify Email
                 </a>
               </div>
@@ -62,8 +62,8 @@ export const getResetPasswordEmailHtml = (link: string): string => `
         <table width="600" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff; border-radius:10px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.05);">
           
           <!-- Header -->
-          <tr style="background-color: #1a73e8;">
-            <td style="padding: 24px; text-align: center; color: white;">
+          <tr>
+            <td style="padding: 24px; text-align: center; background: linear-gradient(to bottom right, #2563eb, #9333ea, #4338ca); color: white;">
               <h2 style="margin: 0; font-size: 24px;">FileForge</h2>
               <p style="margin: 4px 0 0; font-size: 14px;">Secure File Conversion & Sharing</p>
             </td>
@@ -76,7 +76,7 @@ export const getResetPasswordEmailHtml = (link: string): string => `
               <p>We received a request to reset your password. If this was you, please click the button below to create a new password:</p>
 
               <div style="text-align: center; margin: 24px 0;">
-                <a href="${link}" style="padding: 14px 28px; background-color: #1a73e8; color: #fff; border-radius: 6px; text-decoration: none; font-weight: bold; display: inline-block;">
+                <a href="${link}" style="padding: 14px 28px; background: linear-gradient(to bottom right, #2563eb, #9333ea, #4338ca); color: #fff; border-radius: 6px; text-decoration: none; font-weight: bold; display: inline-block;">
                   Reset Password
                 </a>
               </div>
