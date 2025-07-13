@@ -12,7 +12,6 @@ const Footer = () => {
   const { user } = useAuth();
 
   const handleSubscribe = async () => {
-    alert(email);
     if (!email) return;
     if (!user) {
       alert("Please log in to subscribe.");
@@ -36,7 +35,7 @@ const Footer = () => {
     }
     alert("Subscribing to newsletter...");
     try {
-      const res = await api.post("/social/newsletter", { email });
+      const res = await api.post("/marketing/subscribe", { email });
       alert("Subscribed successfully!");
       toast({
         title: "Subscribed!",

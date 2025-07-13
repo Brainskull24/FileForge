@@ -4,18 +4,18 @@ import { Button } from "../ui/button";
 import { CheckCircle, ArrowRight, FileText } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import Cookies from "js-cookie";
 
 const VerificationSuccess: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const accessedViaRedirect = sessionStorage.getItem("email-verified");
-    if (!accessedViaRedirect) {
+    const emailVerified = Cookies.get("email_verified");
+    if (!emailVerified) {
       navigate("/404", { replace: true });
-    } else {
-      sessionStorage.removeItem("email-verified"); // clear after showing once
     }
   }, []);
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-green-50 via-emerald-50 to-teal-100 p-4">
       {/* Animated Background Elements */}

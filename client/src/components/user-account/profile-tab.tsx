@@ -24,65 +24,101 @@ import {
 } from "../ui/select";
 
 export function ProfileTab() {
+  const { user } = useAuth();
+
+  // Local state for profile form
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatar, setAvatar] = useState("");
 
   const [formData, setFormData] = useState({
-    fullName: "",
-    phone: "",
+    fullName: user?.name || "",
+    phone: user?.phone || "",
     language: "",
-    createdAt: "",
-    lastLogin: "",
+    createdAt: user?.createdAt || "",
+    lastLogin: user?.lastLogin || "",
     accountType: "Free",
-    address: "",
-    role: "",
+    role: user?.role || "",
+    street: user?.address?.street || "",
+    city: user?.address?.city || "",
+    state: user?.address?.state || "",
+    country: user?.address?.country || "",
+    postalCode: user?.address?.postalCode || "",
   });
 
-  const { user } = useAuth();
-
   useEffect(() => {
+    if (!user) return;
+
     const fetchProfile = async () => {
+      setLoading(true);
       try {
-        const { data } = await api.get(`/user/profile/${user?.uid}`);
-        setFormData(data);
-        setAvatar(data.avatar || user?.name![0]?.toUpperCase());
+        setFormData((prev) => ({
+          ...prev,
+          fullName: user.name || prev.fullName,
+          phone: user.phone || prev.phone,
+          address: user.address?.toString() || "",
+          role: user.role || "",
+          createdAt: user.createdAt || "",
+          lastLogin: user.lastLogin || "",
+          accountType: "Free",
+        }));
+
+        setAvatar(user.photo || "");
       } catch (err) {
-        alert("Failed to fetch profile");
         console.error(err);
       } finally {
         setLoading(false);
       }
     };
-    fetchProfile();
-  }, [user?.uid, user?.name]);
 
+    fetchProfile();
+  }, [user]);
+
+  // Form input change handler
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const getInitials = (name: string | null | undefined) => {
+    if (!name) return "U";
+    const names = name.trim().split(" ");
+    const initials =
+      names.length >= 2 ? names[0][0] + names[1][0] : names[0][0]
+    return initials.toUpperCase();
+  };
+
+  // Save changes handler
   const handleSaveChanges = async () => {
     setSaving(true);
 
     const form = new FormData();
-    form.append("fullName", formData.fullName);
+    form.append("name", formData.fullName);
     form.append("phone", formData.phone);
-    form.append("address", formData.address);
     form.append("role", formData.role);
-    // Append other fields if needed
+
+    const addressObj = {
+      street: formData.street,
+      city: formData.city,
+      state: formData.state,
+      country: formData.country,
+      postalCode: formData.postalCode,
+    };
+
+    form.append("address", JSON.stringify(addressObj));
 
     if (avatarFile) {
-      form.append("avatar", avatarFile);
+      form.append("profilePic", avatarFile);
     }
 
     try {
-      const { data } = await api.put("/user/profile", form, {
+      // Update profile API call
+      const { data } = await api.put("/account/update", form, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      if (data.avatarUrl) {
-        setAvatar(data.avatarUrl);
+      if (data.profilePic) {
+        setAvatar(data.profilePic);
       }
 
       alert("Profile updated!");
@@ -94,6 +130,7 @@ export function ProfileTab() {
     }
   };
 
+  // Avatar file input change handler
   const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -122,7 +159,9 @@ export function ProfileTab() {
           <div className="flex items-center gap-6">
             <Avatar className="h-32 w-32">
               <AvatarImage src={avatar} alt="Profile picture" />
-              <AvatarFallback className="text-2xl">U</AvatarFallback>
+              <AvatarFallback className="text-2xl">
+                {getInitials(formData.fullName)}
+              </AvatarFallback>
             </Avatar>
             <div className="space-y-2">
               <div className="flex gap-2">
@@ -184,11 +223,45 @@ export function ProfileTab() {
               />
             </div>
             <div>
-              <Label htmlFor="address">Address</Label>
+              <Label htmlFor="street">Street</Label>
               <Input
-                id="address"
-                value={formData.address || ""}
-                onChange={(e) => handleInputChange("address", e.target.value)}
+                id="street"
+                value={formData.street}
+                onChange={(e) => handleInputChange("street", e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="city">City</Label>
+              <Input
+                id="city"
+                value={formData.city}
+                onChange={(e) => handleInputChange("city", e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="state">State</Label>
+              <Input
+                id="state"
+                value={formData.state}
+                onChange={(e) => handleInputChange("state", e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="country">Country</Label>
+              <Input
+                id="country"
+                value={formData.country}
+                onChange={(e) => handleInputChange("country", e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="postalCode">Postal Code</Label>
+              <Input
+                id="postalCode"
+                value={formData.postalCode}
+                onChange={(e) =>
+                  handleInputChange("postalCode", e.target.value)
+                }
               />
             </div>
             <div>
@@ -228,13 +301,17 @@ export function ProfileTab() {
           <div>
             <Label>Created At</Label>
             <p className="text-sm">
-              {new Date(formData.createdAt).toLocaleString()}
+              {formData.createdAt
+                ? new Date(formData.createdAt).toLocaleString()
+                : "N/A"}
             </p>
           </div>
           <div>
             <Label>Last Login</Label>
             <p className="text-sm">
-              {new Date(formData.lastLogin).toLocaleString()}
+              {formData.lastLogin
+                ? new Date(formData.lastLogin).toLocaleString()
+                : "N/A"}
             </p>
           </div>
           <div className="flex flex-col gap-2">

@@ -10,18 +10,18 @@ import {
 } from "../utils/emailTemplates";
 
 export const register = async (req: Request, res: Response): Promise<void> => {
-  const {
-    name,
-    email,
-    password,
-    phone,
-    address,
-    profilePicture,
-  } = req.body;
+  const { name, email, password, phone, address } = req.body;
+  const file = req.file;
+
+  let parsedAddress;
+  if (typeof address === "string") {
+    parsedAddress = JSON.parse(address);
+  } else {
+    parsedAddress = address;
+  }
 
   const existing = await UserModel.findOne({ email });
   if (existing) {
-    console.log("Email already in use:", email);
     res.status(400).json({ error: "Email already in use" });
     return;
   }
@@ -29,13 +29,21 @@ export const register = async (req: Request, res: Response): Promise<void> => {
   const hashed = await bcrypt.hash(password, 10);
   const token = crypto.randomBytes(20).toString("hex");
 
+  // 🧠 Convert file to base64 string
+  let profilePicBase64: string | undefined = undefined;
+  if (file) {
+    const base64 = file.buffer.toString("base64");
+    const mimeType = file.mimetype;
+    profilePicBase64 = `data:${mimeType};base64,${base64}`;
+  }
+
   const user = new UserModel({
     email,
     password: hashed,
     name,
     phone,
-    address,
-    profilePicture,
+    address: parsedAddress,
+    profilePic: profilePicBase64,
     verificationToken: token,
   });
 
@@ -44,10 +52,14 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
   await sendEmail(email, "Verify Email Address", html);
   await user.save();
+
   res.status(201).json({ message: "Registered. Please verify email." });
 };
 
-export const verifyEmail = async (req: Request, res: Response): Promise<void> => {
+export const verifyEmail = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   const { token } = req.query;
   const user = await UserModel.findOne({ verificationToken: token });
 
@@ -69,6 +81,10 @@ export const verifyEmail = async (req: Request, res: Response): Promise<void> =>
 
   const acceptHeader = req.headers["accept"];
   if (acceptHeader && acceptHeader.includes("application/json")) {
+    res.cookie("email_verified", "false", {
+      maxAge: 1000 * 60,
+      httpOnly: false,
+    });
     res.json({ message: "Email verified successfully", email: user.email });
     return;
   }
@@ -80,8 +96,10 @@ export const verifyEmail = async (req: Request, res: Response): Promise<void> =>
   res.redirect("http://localhost:5173/verified");
 };
 
-
-export const resendVerification = async (req: Request, res: Response): Promise<void> => {
+export const resendVerification = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   const { email } = req.body;
   const user = await UserModel.findOne({ email });
   if (!user) {
@@ -109,7 +127,11 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   const { email, password } = req.body;
   const user = await UserModel.findOne({ email }).lean();
 
-  if (!user || !user.password || !(await bcrypt.compare(password, user.password))) {
+  if (
+    !user ||
+    !user.password ||
+    !(await bcrypt.compare(password, user.password))
+  ) {
     res.status(400).json({ error: "Invalid credentials" });
     return;
   }
@@ -120,14 +142,22 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   }
 
   const token = generateToken({ userId: user._id });
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+
+  await UserModel.findByIdAndUpdate(user._id, { lastLogin: new Date() });
+
   res.json({
-    token,
     success: true,
     user: {
       id: user._id,
       email: user.email,
       name: user.name,
-      profilePicture: user.profilePicture || null,
+      profilePic: user.profilePic || null,
       phone: user.phone || "",
       address: user.address || {},
       createdAt: user.createdAt,
@@ -138,10 +168,14 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 };
 
 export const logout = async (_req: Request, res: Response): Promise<void> => {
-  res.json({ message: "Logged out" });
+  res.clearCookie("token");
+  res.json({ message: "Logged out successfully" });
 };
 
-export const forgotPassword = async (req: Request, res: Response): Promise<void> => {
+export const forgotPassword = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   const { email } = req.body;
   const user = await UserModel.findOne({ email });
 
@@ -161,7 +195,10 @@ export const forgotPassword = async (req: Request, res: Response): Promise<void>
   res.json({ message: "Reset link sent" });
 };
 
-export const resetPassword = async (req: Request, res: Response): Promise<void> => {
+export const resetPassword = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   const { token } = req.query;
   const { password } = req.body;
   const user = await UserModel.findOne({ resetToken: token });

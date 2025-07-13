@@ -4,7 +4,7 @@ import { Badge } from "../ui/badge";
 import { Progress } from "../ui/progress";
 import { ScrollArea } from "../ui/scroll-area";
 import { Separator } from "../ui/separator";
-import type { ProcessingJob, UserCredits } from "./main";
+import type { ProcessingJob } from "./main";
 import {
   Download,
   Clock,
@@ -16,16 +16,15 @@ import {
   FileText,
   AlertCircle,
 } from "lucide-react";
+import { useAuth } from "../../context/auth";
 
 interface ResultsPanelProps {
   processingJobs: ProcessingJob[];
-  userCredits: UserCredits;
 }
 
-export function ResultsPanel({
-  processingJobs,
-  userCredits,
-}: ResultsPanelProps) {
+export function ResultsPanel({ processingJobs }: ResultsPanelProps) {
+  const { user } = useAuth();
+
   const activeJobs = processingJobs.filter(
     (job) => job.status === "processing" || job.status === "queued"
   );
@@ -90,6 +89,10 @@ export function ResultsPanel({
     return `${Math.floor(diffInSeconds / 86400)}d ago`;
   };
 
+  const totalCredits = 500;
+  const usedCredits = totalCredits - (user?.credits ?? 0);
+  const usedPercentage = (usedCredits / totalCredits) * 100;
+
   return (
     <div className="w-[350px] border-l bg-muted/30 flex flex-col">
       {/* Credits Usage */}
@@ -103,20 +106,15 @@ export function ResultsPanel({
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span>Used</span>
-              <span>
-                {userCredits.used} / {userCredits.total}
-              </span>
+              <span>{usedPercentage}</span>
             </div>
-            <Progress
-              value={(userCredits.used / userCredits.total) * 100}
-              className="h-2"
-            />
+            <Progress value={usedPercentage} className="h-2" />
             <div className="text-xs text-muted-foreground">
-              {userCredits.current} credits remaining
+              {user?.credits} credits remaining
             </div>
           </div>
 
-          {userCredits.current < 100 && (
+          {totalCredits - usedCredits < 100 && (
             <div className="flex items-center gap-2 p-2 bg-orange-50 dark:bg-orange-950/20 rounded-lg">
               <AlertCircle className="h-4 w-4 text-orange-500" />
               <span className="text-xs text-orange-600 dark:text-orange-400">

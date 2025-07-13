@@ -163,7 +163,6 @@ export function UniversalConverterDashboard() {
 
         const blob = new Blob([data]);
         const url = URL.createObjectURL(blob);
-        alert(url);
         setProcessingJobs((prev) =>
           prev.map((j) =>
             j.id === job.id
@@ -202,7 +201,7 @@ export function UniversalConverterDashboard() {
         />
 
         <div className="flex flex-1 flex-col overflow-hidden">
-          <DashboardHeader userCredits={userCredits} />
+          <DashboardHeader />
 
           <div className="flex flex-1 overflow-hidden">
             <MainWorkspace
@@ -213,7 +212,6 @@ export function UniversalConverterDashboard() {
 
             <ResultsPanel
               processingJobs={processingJobs}
-              userCredits={userCredits}
             />
           </div>
         </div>

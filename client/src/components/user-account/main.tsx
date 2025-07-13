@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -12,23 +12,13 @@ import { Badge } from "../ui/badge";
 import { Check } from "lucide-react";
 import { ProfileTab } from "./profile-tab";
 import { SecurityTab } from "./security-tab";
-// import { PreferencesTab } from "./preferences-tab";
 import { BillingTab } from "./billing-tab";
-// import { ApiKeysTab } from "./api-keys-tab";
 import { PrivacyTab } from "./privacy-tab";
+import { useAuth } from "../../context/auth";
 
 export default function AccountSettings() {
-  const [lastSaved, setLastSaved] = useState<Date>(new Date());
   const [activeTab, setActiveTab] = useState("profile");
-
-  // Simulate auto-save
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setLastSaved(new Date());
-    }, 30000); // Update every 30 seconds
-
-    return () => clearInterval(interval);
-  }, []);
+  const { user } = useAuth();
 
   return (
     <div className="container mx-auto py-6">
@@ -51,9 +41,9 @@ export default function AccountSettings() {
           <h1 className="text-3xl font-bold">Account Settings</h1>
           <Badge variant="secondary" className="flex items-center gap-2">
             <Check className="h-3 w-3" />
-            All changes saved
+            Last updated
             <span className="text-xs text-muted-foreground ml-1">
-              {lastSaved.toLocaleTimeString()}
+              {user?.updatedAt}
             </span>
           </Badge>
         </div>

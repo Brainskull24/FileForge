@@ -8,7 +8,6 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { Progress } from "../ui/progress";
-import type { UserCredits } from "./main";
 import {
   CreditCard,
   User,
@@ -24,15 +23,11 @@ import api from "../../lib/axios";
 import { useAuth } from "../../context/auth";
 import { auth } from "../../lib/firebase";
 
-interface DashboardHeaderProps {
-  userCredits: UserCredits;
-}
-
-export function DashboardHeader({ userCredits }: DashboardHeaderProps) {
-  const creditPercentage = (userCredits.current / userCredits.total) * 100;
+export function DashboardHeader() {
+  const { authType, logout, user } = useAuth();
   const navigate = useNavigate();
 
-  const { authType, logout } = useAuth();
+  const creditPercentage = ((user?.credits ?? 0) / 500) * 100;
 
   const handleLogout = async () => {
     try {
@@ -65,9 +60,7 @@ export function DashboardHeader({ userCredits }: DashboardHeaderProps) {
         {/* Credits Display */}
         <div className="flex items-center gap-2">
           <div className="text-right">
-            <div className="text-sm font-medium">
-              {userCredits.current} credits
-            </div>
+            <div className="text-sm font-medium">{user?.credits} credits</div>
             <Progress value={creditPercentage} className="w-20 h-1" />
           </div>
           <Badge variant={creditPercentage > 20 ? "default" : "destructive"}>

@@ -7,7 +7,7 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   const loading = auth?.loading;
 
   if (loading) return <div className="text-center mt-12">Loading...</div>;
-  if (user) return <Navigate to="/convertor" replace />;
+  if (user) return <Navigate to="/" replace />;
   return <>{children}</>;
 };
 

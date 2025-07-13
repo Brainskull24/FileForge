@@ -12,7 +12,6 @@ import { Label } from "../ui/label";
 import { Progress } from "../ui/progress";
 import { Shield } from "lucide-react";
 import api from "../../lib/axios";
-import { useAuth } from "../../context/auth";
 
 export function SecurityTab() {
   const [passwords, setPasswords] = useState({
@@ -23,9 +22,6 @@ export function SecurityTab() {
 
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [loading, setLoading] = useState(false);
-
-  // const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
-  const { user } = useAuth();
 
   const calculatePasswordStrength = (password: string) => {
     let strength = 0;
@@ -48,7 +44,7 @@ export function SecurityTab() {
       alert("Please fill all fields");
       return;
     }
-    alert(passwordStrength);
+
     if (passwordStrength < 100) {
       alert("Password is too weak");
       return;
@@ -60,7 +56,7 @@ export function SecurityTab() {
     }
     try {
       setLoading(true);
-      await api.post(`/auth/change-password/${user?.uid}`, {
+      await api.put(`/account/update-password`, {
         currentPassword: passwords.current,
         newPassword: passwords.new,
       });

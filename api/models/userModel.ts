@@ -16,11 +16,13 @@ export interface IUser extends Document {
   password?: string;
   phone?: string;
   address?: Address;
-  profilePicture?: string;
+  profilePic?: string;
   verified: boolean;
   verificationToken?: string;
+  role?: string;
   resetToken?: string;
   credits?: number;
+  lastLogin?: Date;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -45,11 +47,13 @@ const userSchema = new Schema<IUser>(
     password: { type: String },
     phone: { type: String },
     address: { type: addressSchema, required: false },
-    profilePicture: { type: String },
+    profilePic: { type: String },
     verified: { type: Boolean, default: false },
+    role: { type: String },
     verificationToken: { type: String },
     resetToken: { type: String },
-    credits: { type: Number, default: 0 },
+    credits: { type: Number, default: 500 },
+    lastLogin: { type: Date },
   },
   { timestamps: true }
 );

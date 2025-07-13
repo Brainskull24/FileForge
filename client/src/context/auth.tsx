@@ -2,8 +2,17 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged, getIdToken } from "firebase/auth";
 import { auth } from "../lib/firebase";
 import type { ReactNode } from "react";
+import api from "../lib/axios";
 
 type AuthType = "firebase" | "custom";
+
+interface Address {
+  street?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  postalCode?: string;
+}
 
 interface User {
   email: string | null;
@@ -11,12 +20,17 @@ interface User {
   uid: string;
   photo: string | null;
   role?: string;
-  university?: string;
+  phone?: string;
+  credits?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  lastLogin?: Date;
+  address?: Address;
 }
 
 interface AuthContextType {
   user: User | null;
-  token: string | null;
+  token: string | null; // will only be used for Firebase
   authType: AuthType | null;
   loading: boolean;
   setUser: (user: User | null) => void;
@@ -27,14 +41,14 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null); // Only used for Firebase
   const [authType, setAuthType] = useState<AuthType | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    // 1. Handle Firebase user
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
+        // ✅ Firebase flow
         const token = await getIdToken(firebaseUser);
         const { email, displayName, uid, photoURL } = firebaseUser;
 
@@ -43,25 +57,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           name: displayName,
           uid,
           photo: photoURL,
+          credits: 0
         };
 
         setUser(userData);
         setToken(token);
         setAuthType("firebase");
-
-        localStorage.setItem("authType", "firebase");
-        localStorage.setItem("token", token);
       } else {
-        // 2. Try loading custom backend user from localStorage
-        const stored = localStorage.getItem("backendUser");
-        const storedToken = localStorage.getItem("token");
+        // ✅ Backend cookie flow
+        try {
+          const res = await api.get("/account/details"); // token sent via cookie
+          const backendUser = res.data;
 
-        if (stored && storedToken) {
-          const parsed = JSON.parse(stored);
-          setUser(parsed);
-          setToken(storedToken);
+          const userData: User = {
+            email: backendUser.email,
+            name: backendUser.name,
+            uid: backendUser._id,
+            photo: backendUser.profilePic || null,
+            role: backendUser.role || "",
+            phone: backendUser.phone || "",
+            credits: backendUser.credits,
+            createdAt: backendUser.createdAt,
+            updatedAt: backendUser.updatedAt,
+            lastLogin: backendUser.lastLogin,
+            address: backendUser.address || {}, // structured address
+          };
+
+          setUser(userData);
+          setToken(null);
           setAuthType("custom");
-        } else {
+        } catch (error) {
+          console.warn("No valid backend session");
           setUser(null);
           setToken(null);
           setAuthType(null);
@@ -74,14 +100,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribe();
   }, []);
 
-  const logout = () => {
-    // Firebase logout
-    auth.signOut();
-
-    // Clear backend auth
-    localStorage.removeItem("backendUser");
-    localStorage.removeItem("token");
-    localStorage.removeItem("authType");
+  const logout = async () => {
+    if (authType === "firebase") {
+      await auth.signOut();
+    } else if (authType === "custom") {
+      await api.post("/auth/logout"); // optional if you build this route
+    }
 
     setUser(null);
     setToken(null);

@@ -8,10 +8,13 @@ import {
   forgotPassword,
   resetPassword,
 } from "../controllers/authController";
+import multer from "multer";
 
+const storage = multer.memoryStorage(); // or diskStorage
+const upload = multer({ storage });
 const router = Router();
 
-router.post("/register", register);
+router.post("/register", upload.single("profilePic"), register);
 router.post("/login", login);
 router.post("/logout", logout);
 router.get("/verify-email", verifyEmail);

@@ -21,7 +21,6 @@ import {
   Sparkles,
   ArrowLeft,
   FileText,
-  RefreshCw,
   MapPin,
   Phone,
   User,
@@ -31,6 +30,7 @@ import { Link } from "react-router-dom";
 import api from "../../lib/axios";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/auth";
+import EmailVerification from "./EmailVerification";
 
 const AuthPage: React.FC = () => {
   const [mode, setMode] = useState<"login" | "signup">("login");
@@ -41,7 +41,7 @@ const AuthPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showVerification, setShowVerification] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
-  
+
   // New fields for registration
   const [phoneNumber, setPhoneNumber] = useState("");
   const [profilePic, setProfilePic] = useState<File | null>(null);
@@ -51,8 +51,7 @@ const AuthPage: React.FC = () => {
   const [state, setState] = useState("");
   const [country, setCountry] = useState("");
   const [postalCode, setPostalCode] = useState("");
-  const [addressLoading, setAddressLoading] = useState(false);
-  
+
   const navigate = useNavigate();
   const { setUser } = useAuth();
 
@@ -68,32 +67,6 @@ const AuthPage: React.FC = () => {
     }
   };
 
-  const handlePostalCodeChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const code = e.target.value;
-    setPostalCode(code);
-    
-    if (code.length >= 5) {
-      setAddressLoading(true);
-      try {
-        // Using a free postal code API - you may need to replace with your preferred service
-        const response = await fetch(`https://api.zippopotam.us/us/${code}`);
-        if (response.ok) {
-          const data = await response.json();
-          if (data.places && data.places.length > 0) {
-            const place = data.places[0];
-            setCity(place['place name'] || '');
-            setState(place['state abbreviation'] || '');
-            setCountry(data.country || 'US');
-          }
-        }
-      } catch (error) {
-        console.log('Could not fetch address data:', error);
-      } finally {
-        setAddressLoading(false);
-      }
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -102,12 +75,7 @@ const AuthPage: React.FC = () => {
       if (mode === "login") {
         const res = await api.post("/auth/login", { email, password });
         const data = res.data;
-
-        console.log("Login Success:", data);
         setUser(data.user);
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("backendUser", JSON.stringify(data.user));
-        localStorage.setItem("authType", "custom");
         navigate("/convertor");
       } else {
         // Signup flow with new fields
@@ -115,19 +83,16 @@ const AuthPage: React.FC = () => {
         formData.append("name", name);
         formData.append("email", email);
         formData.append("password", password);
-        formData.append("phoneNumber", phoneNumber);
-        formData.append("street", street);
-        formData.append("city", city);
-        formData.append("state", state);
-        formData.append("country", country);
-        formData.append("postalCode", postalCode);
+        formData.append("phone", phoneNumber);
+        const addressObj = { street, city, state, country, postalCode };
+        formData.append("address", JSON.stringify(addressObj));
         if (profilePic) {
           formData.append("profilePic", profilePic);
         }
 
         const res = await api.post("/auth/register", formData, {
           headers: {
-            'Content-Type': 'multipart/form-data',
+            "Content-Type": "multipart/form-data",
           },
         });
         const data = res.data;
@@ -192,94 +157,12 @@ const AuthPage: React.FC = () => {
   // Email verification screen
   if (showVerification) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-4 overflow-hidden">
-        {/* Animated Background Elements */}
-        <div className="absolute inset-0 overflow-hidden">
-          <Code2 className="absolute top-8 left-8 h-32 w-32 text-blue-200/20 animate-pulse" />
-          <Database
-            className="absolute bottom-12 right-16 h-28 w-28 text-indigo-200/25 animate-bounce"
-            style={{ animationDuration: "3s" }}
-          />
-          <Zap
-            className="absolute top-16 right-12 h-20 w-20 text-purple-200/30 animate-pulse"
-            style={{ animationDelay: "1s" }}
-          />
-        </div>
-
-        <Card className="relative max-w-md w-full bg-white/70 backdrop-blur-xl shadow-2xl border border-white/20">
-          <CardContent className="relative p-8">
-            {/* Back Button */}
-            <div className="absolute top-4 left-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowVerification(false)}
-                className="flex items-center gap-2 text-slate-600 hover:text-slate-800 hover:bg-white/50 rounded-lg transition-all duration-200"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                <span className="text-sm font-medium">Back</span>
-              </Button>
-            </div>
-
-            {/* Header */}
-            <div className="text-center space-y-4 mb-8 mt-8">
-              <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-                <Mail className="h-8 w-8 text-green-600" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                  Check Your Email
-                </h1>
-                <p className="text-sm text-slate-600">
-                  We've sent a verification link to
-                </p>
-                <p className="text-sm font-semibold text-blue-600">{email}</p>
-              </div>
-            </div>
-
-            {/* Instructions */}
-            <div className="space-y-4 mb-8">
-              <div className="bg-blue-50/50 rounded-lg p-4 border border-blue-200/30">
-                <p className="text-sm text-slate-700 leading-relaxed">
-                  Click the verification link in your email to activate your
-                  account. The link will expire in 24 hours.
-                </p>
-              </div>
-
-              <div className="text-center">
-                <p className="text-sm text-slate-600 mb-4">
-                  Didn't receive the email? Check your spam folder or
-                </p>
-                <Button
-                  onClick={handleResendVerification}
-                  disabled={resendLoading}
-                  variant="outline"
-                  className="w-full h-11 rounded-xl font-semibold border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-all duration-300 bg-transparent"
-                >
-                  {resendLoading ? (
-                    <div className="flex items-center gap-2">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Sending...
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <RefreshCw className="h-4 w-4" />
-                      Resend Verification Email
-                    </div>
-                  )}
-                </Button>
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className="text-center">
-              <p className="text-xs text-slate-500">
-                Having trouble? Contact our support team
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <EmailVerification
+        email={email}
+        onBack={() => setShowVerification(false)}
+        onResend={handleResendVerification}
+        loading={resendLoading}
+      />
     );
   }
 
@@ -314,7 +197,11 @@ const AuthPage: React.FC = () => {
       </div>
 
       {/* Enhanced Glassmorphic Card */}
-      <Card className={`relative w-full bg-white/70 backdrop-blur-xl shadow-2xl border border-white/20 transition-all duration-500 hover:shadow-3xl hover:bg-white/75 ${mode === 'signup' ? 'max-w-4xl' : 'max-w-md'}`}>
+      <Card
+        className={`relative w-full bg-white/70 backdrop-blur-xl shadow-2xl border border-white/20 transition-all duration-500 hover:shadow-3xl hover:bg-white/75 ${
+          mode === "signup" ? "max-w-4xl" : "max-w-md"
+        }`}
+      >
         <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent rounded-lg" />
         <CardContent className="relative p-8">
           {/* Back to Homepage Button */}
@@ -409,7 +296,10 @@ const AuthPage: React.FC = () => {
                   {/* Left Column */}
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="name" className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                      <Label
+                        htmlFor="name"
+                        className="text-sm font-semibold text-slate-700 flex items-center gap-2"
+                      >
                         <User className="h-4 w-4" />
                         Full Name
                       </Label>
@@ -425,7 +315,10 @@ const AuthPage: React.FC = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="email" className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                      <Label
+                        htmlFor="email"
+                        className="text-sm font-semibold text-slate-700 flex items-center gap-2"
+                      >
                         <Mail className="h-4 w-4" />
                         Email Address
                       </Label>
@@ -441,7 +334,10 @@ const AuthPage: React.FC = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="phoneNumber" className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                      <Label
+                        htmlFor="phoneNumber"
+                        className="text-sm font-semibold text-slate-700 flex items-center gap-2"
+                      >
                         <Phone className="h-4 w-4" />
                         Phone Number
                       </Label>
@@ -452,12 +348,14 @@ const AuthPage: React.FC = () => {
                         onChange={(e) => setPhoneNumber(e.target.value)}
                         className="h-12 rounded-xl border-slate-200/60 bg-white/50 backdrop-blur-sm focus:border-blue-500 focus:ring-blue-500/20 focus:bg-white/80 transition-all duration-300 placeholder:text-slate-400"
                         placeholder="Enter your phone number"
-                        required
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="password" className="text-sm font-semibold text-slate-700">
+                      <Label
+                        htmlFor="password"
+                        className="text-sm font-semibold text-slate-700"
+                      >
                         Password
                       </Label>
                       <div className="relative">
@@ -488,7 +386,10 @@ const AuthPage: React.FC = () => {
                   {/* Right Column - Address */}
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="postalCode" className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                      <Label
+                        htmlFor="postalCode"
+                        className="text-sm font-semibold text-slate-700 flex items-center gap-2"
+                      >
                         <MapPin className="h-4 w-4" />
                         Postal Code
                       </Label>
@@ -497,21 +398,18 @@ const AuthPage: React.FC = () => {
                           id="postalCode"
                           type="text"
                           value={postalCode}
-                          onChange={handlePostalCodeChange}
+                          onChange={(e) => setPostalCode(e.target.value)}
                           className="h-12 rounded-xl border-slate-200/60 bg-white/50 backdrop-blur-sm focus:border-blue-500 focus:ring-blue-500/20 focus:bg-white/80 transition-all duration-300 placeholder:text-slate-400"
                           placeholder="Enter postal code"
-                          required
                         />
-                        {addressLoading && (
-                          <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                            <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
-                          </div>
-                        )}
                       </div>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="street" className="text-sm font-semibold text-slate-700">
+                      <Label
+                        htmlFor="street"
+                        className="text-sm font-semibold text-slate-700"
+                      >
                         Street Address
                       </Label>
                       <Input
@@ -521,12 +419,14 @@ const AuthPage: React.FC = () => {
                         onChange={(e) => setStreet(e.target.value)}
                         className="h-12 rounded-xl border-slate-200/60 bg-white/50 backdrop-blur-sm focus:border-blue-500 focus:ring-blue-500/20 focus:bg-white/80 transition-all duration-300 placeholder:text-slate-400"
                         placeholder="Enter your street address"
-                        required
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="city" className="text-sm font-semibold text-slate-700">
+                      <Label
+                        htmlFor="city"
+                        className="text-sm font-semibold text-slate-700"
+                      >
                         City
                       </Label>
                       <Input
@@ -536,13 +436,15 @@ const AuthPage: React.FC = () => {
                         onChange={(e) => setCity(e.target.value)}
                         className="h-12 rounded-xl border-slate-200/60 bg-white/50 backdrop-blur-sm focus:border-blue-500 focus:ring-blue-500/20 focus:bg-white/80 transition-all duration-300 placeholder:text-slate-400"
                         placeholder="Enter your city"
-                        required
                       />
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-2">
-                        <Label htmlFor="state" className="text-sm font-semibold text-slate-700">
+                        <Label
+                          htmlFor="state"
+                          className="text-sm font-semibold text-slate-700"
+                        >
                           State
                         </Label>
                         <Input
@@ -552,11 +454,13 @@ const AuthPage: React.FC = () => {
                           onChange={(e) => setState(e.target.value)}
                           className="h-12 rounded-xl border-slate-200/60 bg-white/50 backdrop-blur-sm focus:border-blue-500 focus:ring-blue-500/20 focus:bg-white/80 transition-all duration-300 placeholder:text-slate-400"
                           placeholder="State"
-                          required
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="country" className="text-sm font-semibold text-slate-700">
+                        <Label
+                          htmlFor="country"
+                          className="text-sm font-semibold text-slate-700"
+                        >
                           Country
                         </Label>
                         <Input
@@ -566,7 +470,6 @@ const AuthPage: React.FC = () => {
                           onChange={(e) => setCountry(e.target.value)}
                           className="h-12 rounded-xl border-slate-200/60 bg-white/50 backdrop-blur-sm focus:border-blue-500 focus:ring-blue-500/20 focus:bg-white/80 transition-all duration-300 placeholder:text-slate-400"
                           placeholder="Country"
-                          required
                         />
                       </div>
                     </div>
@@ -577,7 +480,10 @@ const AuthPage: React.FC = () => {
               <>
                 {/* Login Form */}
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-semibold text-slate-700">
+                  <Label
+                    htmlFor="email"
+                    className="text-sm font-semibold text-slate-700"
+                  >
                     Email Address
                   </Label>
                   <Input
@@ -592,7 +498,10 @@ const AuthPage: React.FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-sm font-semibold text-slate-700">
+                  <Label
+                    htmlFor="password"
+                    className="text-sm font-semibold text-slate-700"
+                  >
                     Password
                   </Label>
                   <div className="relative">
