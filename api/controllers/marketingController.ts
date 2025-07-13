@@ -14,6 +14,12 @@ export const subscribeMarketing = async (
       return;
     }
 
+    const existing = await MarketingLead.find({ email: user.email });
+    if (existing) {
+      res.status(400).json({ error: "User already subscribed!" });
+      return;
+    }
+
     const entry = new MarketingLead({
       userId: user._id,
       email: user.email,

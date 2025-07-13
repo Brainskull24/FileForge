@@ -1,38 +1,41 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState, useCallback } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card"
-import { Upload } from "lucide-react"
+import type React from "react";
+import { useState, useCallback } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
+import { Upload } from "lucide-react";
 
 interface FileUploadAreaProps {
-  currentTool: any
-  onFilesSelected: (files: File[]) => void
+  currentTool: any;
+  onFilesSelected: (files: File[]) => void;
 }
 
-export function FileUploadArea({ currentTool, onFilesSelected }: FileUploadAreaProps) {
-  const [dragActive, setDragActive] = useState(false)
+export function FileUploadArea({
+  currentTool,
+  onFilesSelected,
+}: FileUploadAreaProps) {
+  const [dragActive, setDragActive] = useState(false);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
+    e.preventDefault();
+    e.stopPropagation();
     if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true)
+      setDragActive(true);
     } else if (e.type === "dragleave") {
-      setDragActive(false)
+      setDragActive(false);
     }
-  }, [])
+  }, []);
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
-      e.preventDefault()
-      e.stopPropagation()
-      setDragActive(false)
-      const files = Array.from(e.dataTransfer.files)
-      onFilesSelected(files)
+      e.preventDefault();
+      e.stopPropagation();
+      setDragActive(false);
+      const files = Array.from(e.dataTransfer.files);
+      onFilesSelected(files);
     },
-    [onFilesSelected],
-  )
+    [onFilesSelected]
+  );
 
   return (
     <Card>
@@ -50,16 +53,24 @@ export function FileUploadArea({ currentTool, onFilesSelected }: FileUploadAreaP
           onDrop={handleDrop}
         >
           <Upload className="h-8 w-8 text-muted-foreground mb-2" />
-          <p className="text-sm text-muted-foreground">Drop files here or click to browse</p>
+          <p className="text-sm text-muted-foreground">
+            Drop files here or click to browse
+          </p>
           <input
             type="file"
-            multiple
-            accept={"fileTypes" in currentTool && currentTool.fileTypes ? currentTool.fileTypes.join(",") : undefined}
+            multiple={false}
+            accept={
+              "fileTypes" in currentTool && currentTool.fileTypes
+                ? currentTool.fileTypes.join(",")
+                : undefined
+            }
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-            onChange={(e) => e.target.files && onFilesSelected(Array.from(e.target.files))}
+            onChange={(e) =>
+              e.target.files && onFilesSelected(Array.from(e.target.files))
+            }
           />
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

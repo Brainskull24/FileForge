@@ -25,15 +25,14 @@ import {
   Settings,
   HelpCircle,
   ChevronDown,
-  // Sparkles,
 } from "lucide-react";
 import {
   decodingTools,
   encodingTools,
   fileConversionCategories,
-  // advancedTools,
 } from "../../data/sidebarConfigs";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface AppSidebarProps {
   selectedTool: string | null;
@@ -41,6 +40,8 @@ interface AppSidebarProps {
 }
 
 export function AppSidebar({ selectedTool, onToolSelect }: AppSidebarProps) {
+  const navigate = useNavigate();
+
   const [openSections, setOpenSections] = useState({
     decoding: true,
     encoding: true,
@@ -184,11 +185,25 @@ export function AppSidebar({ selectedTool, onToolSelect }: AppSidebarProps) {
 
       <SidebarFooter className="border-t p-4">
         <div className="space-y-2">
-          <Button variant="ghost" size="sm" className="w-full justify-start">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start"
+            onClick={() => {
+              navigate("/settings");
+            }}
+          >
             <Settings className="mr-2 h-4 w-4" />
             Settings
           </Button>
-          <Button variant="ghost" size="sm" className="w-full justify-start">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start"
+            onClick={() => {
+              navigate("/help");
+            }}
+          >
             <HelpCircle className="mr-2 h-4 w-4" />
             Help & Support
           </Button>

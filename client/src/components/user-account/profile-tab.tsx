@@ -15,81 +15,128 @@ import { Badge } from "../ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useAuth } from "../../context/auth";
 
-// import {
-//   Select,
-//   SelectContent,
-//   SelectItem,
-//   SelectTrigger,
-//   SelectValue,
-// } from "../ui/select";
-// import { toast } from "../../hooks/use-toast";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
 
 export function ProfileTab() {
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-
-  const [avatar, setAvatar] = useState("");
-  const [formData, setFormData] = useState({
-    fullName: "NG",
-    phone: "2343342434",
-    language: "en",
-    createdAt: "",
-    lastLogin: "",
-    accountType: "Free",
-  });
-
   const { user } = useAuth();
 
+  // Local state for profile form
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatar, setAvatar] = useState("");
+
+  const [formData, setFormData] = useState({
+    fullName: user?.name || "",
+    phone: user?.phone || "",
+    language: "",
+    createdAt: user?.createdAt || "",
+    lastLogin: user?.lastLogin || "",
+    accountType: "Free",
+    role: user?.role || "",
+    street: user?.address?.street || "",
+    city: user?.address?.city || "",
+    state: user?.address?.state || "",
+    country: user?.address?.country || "",
+    postalCode: user?.address?.postalCode || "",
+  });
+
   useEffect(() => {
+    if (!user) return;
+
     const fetchProfile = async () => {
+      setLoading(true);
       try {
-        const { data } = await api.get(`/user/profile/${user?.uid}`);
-        setFormData(data);
-        setAvatar(data.avatar || user?.name![0]?.toUpperCase());
+        setFormData((prev) => ({
+          ...prev,
+          fullName: user.name || prev.fullName,
+          phone: user.phone || prev.phone,
+          address: user.address?.toString() || "",
+          role: user.role || "",
+          createdAt: user.createdAt || "",
+          lastLogin: user.lastLogin || "",
+          accountType: "Free",
+        }));
+
+        setAvatar(user.photo || "");
       } catch (err) {
-        alert("Failed to fetch profile");
         console.error(err);
       } finally {
         setLoading(false);
       }
     };
-    fetchProfile();
-  }, []);
 
+    fetchProfile();
+  }, [user]);
+
+  // Form input change handler
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleAvatarUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const formData = new FormData();
-    formData.append("avatar", file);
-
-    try {
-      const { data } = await api.post("/user/avatar", formData);
-      setAvatar(data.avatarUrl);
-      alert("Avatar updated successfully!");
-    } catch (err) {
-      console.error("Avatar upload failed", err);
-      alert("Failed to upload avatar");
-    }
+  const getInitials = (name: string | null | undefined) => {
+    if (!name) return "U";
+    const names = name.trim().split(" ");
+    const initials =
+      names.length >= 2 ? names[0][0] + names[1][0] : names[0][0]
+    return initials.toUpperCase();
   };
 
+  // Save changes handler
   const handleSaveChanges = async () => {
     setSaving(true);
+
+    const form = new FormData();
+    form.append("name", formData.fullName);
+    form.append("phone", formData.phone);
+    form.append("role", formData.role);
+
+    const addressObj = {
+      street: formData.street,
+      city: formData.city,
+      state: formData.state,
+      country: formData.country,
+      postalCode: formData.postalCode,
+    };
+
+    form.append("address", JSON.stringify(addressObj));
+
+    if (avatarFile) {
+      form.append("profilePic", avatarFile);
+    }
+
     try {
-      await api.put("/user/profile", formData);
+      // Update profile API call
+      const { data } = await api.put("/account/update", form, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      if (data.profilePic) {
+        setAvatar(data.profilePic);
+      }
+
       alert("Profile updated!");
     } catch (err) {
+      console.error("Failed to update profile", err);
       alert("Failed to update profile");
-      console.error(err);
     } finally {
       setSaving(false);
     }
+  };
+
+  // Avatar file input change handler
+  const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setAvatarFile(file);
+    setAvatar(URL.createObjectURL(file));
   };
 
   if (loading) {
@@ -112,7 +159,9 @@ export function ProfileTab() {
           <div className="flex items-center gap-6">
             <Avatar className="h-32 w-32">
               <AvatarImage src={avatar} alt="Profile picture" />
-              <AvatarFallback className="text-2xl">U</AvatarFallback>
+              <AvatarFallback className="text-2xl">
+                {getInitials(formData.fullName)}
+              </AvatarFallback>
             </Avatar>
             <div className="space-y-2">
               <div className="flex gap-2">
@@ -122,7 +171,7 @@ export function ProfileTab() {
                   <input
                     type="file"
                     accept="image/*"
-                    onChange={handleAvatarUpload}
+                    onChange={handleAvatarChange}
                     className="absolute inset-0 opacity-0 cursor-pointer"
                   />
                 </Button>
@@ -158,11 +207,7 @@ export function ProfileTab() {
             <div>
               <Label htmlFor="email">Email Address</Label>
               <div className="flex gap-2">
-                <Input
-                  id="email"
-                  contentEditable={false}
-                  value={user?.email || ""}
-                />
+                <Input id="email" readOnly value={user?.email || ""} />
                 <Badge variant="secondary" className="flex items-center gap-1">
                   <CheckCircle className="h-3 w-3" />
                   Verified
@@ -177,23 +222,66 @@ export function ProfileTab() {
                 onChange={(e) => handleInputChange("phone", e.target.value)}
               />
             </div>
-            {/* <div>
-              <Label htmlFor="timezone">Time Zone</Label>
+            <div>
+              <Label htmlFor="street">Street</Label>
+              <Input
+                id="street"
+                value={formData.street}
+                onChange={(e) => handleInputChange("street", e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="city">City</Label>
+              <Input
+                id="city"
+                value={formData.city}
+                onChange={(e) => handleInputChange("city", e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="state">State</Label>
+              <Input
+                id="state"
+                value={formData.state}
+                onChange={(e) => handleInputChange("state", e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="country">Country</Label>
+              <Input
+                id="country"
+                value={formData.country}
+                onChange={(e) => handleInputChange("country", e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="postalCode">Postal Code</Label>
+              <Input
+                id="postalCode"
+                value={formData.postalCode}
+                onChange={(e) =>
+                  handleInputChange("postalCode", e.target.value)
+                }
+              />
+            </div>
+            <div>
+              <Label htmlFor="role">Role</Label>
               <Select
-                value={formData.timezone}
-                onValueChange={(value) => handleInputChange("timezone", value)}
+                value={formData.role}
+                onValueChange={(value) => handleInputChange("role", value)}
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select a role" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Asia/Kolkata">India (IST)</SelectItem>
-                  <SelectItem value="America/New_York">US - EST</SelectItem>
-                  <SelectItem value="Europe/London">London (GMT)</SelectItem>
-                  <SelectItem value="Asia/Tokyo">Tokyo (JST)</SelectItem>
+                  <SelectItem value="student">Student</SelectItem>
+                  <SelectItem value="working-professional">
+                    Working Professional
+                  </SelectItem>
+                  <SelectItem value="business-owner">Business Owner</SelectItem>
                 </SelectContent>
               </Select>
-            </div> */}
+            </div>
           </div>
           <div className="flex justify-end">
             <Button onClick={handleSaveChanges} disabled={saving}>
@@ -213,13 +301,17 @@ export function ProfileTab() {
           <div>
             <Label>Created At</Label>
             <p className="text-sm">
-              {new Date(formData.createdAt).toLocaleString()}
+              {formData.createdAt
+                ? new Date(formData.createdAt).toLocaleString()
+                : "N/A"}
             </p>
           </div>
           <div>
             <Label>Last Login</Label>
             <p className="text-sm">
-              {new Date(formData.lastLogin).toLocaleString()}
+              {formData.lastLogin
+                ? new Date(formData.lastLogin).toLocaleString()
+                : "N/A"}
             </p>
           </div>
           <div className="flex flex-col gap-2">

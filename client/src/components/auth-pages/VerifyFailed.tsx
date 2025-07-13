@@ -1,5 +1,5 @@
 import type React from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -11,13 +11,21 @@ import {
   Loader2,
   AlertTriangle,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import api from "../../lib/axios";
+import Cookies from "js-cookie";
 
 const VerificationFailed: React.FC = () => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [showResendForm, setShowResendForm] = useState(false);
+  const navigate = useNavigate();
+  useEffect(() => {
+    const emailVerified = Cookies.get("email_verified");
+    if (!emailVerified || emailVerified !== "false") {
+      navigate("/404", { replace: true });
+    }
+  }, []);
 
   const handleResendVerification = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -9,29 +9,9 @@ import {
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
-// import { Switch } from "../ui/switch";
-// import { Badge } from "../ui/badge";
 import { Progress } from "../ui/progress";
-// import {
-//   Table,
-//   TableBody,
-//   TableCell,
-//   TableHead,
-//   TableHeader,
-//   TableRow,
-// } from "../ui/table";
-import {
-  Shield,
-  // Smartphone,
-  // AlertTriangle,
-  // Monitor,
-  // MapPin,
-  // Clock,
-} from "lucide-react";
-// import { loginActivity, activeSessions } from "../../data/accountConfigs";
+import { Shield } from "lucide-react";
 import api from "../../lib/axios";
-// import { toast } from "../../hooks/use-toast";
-// import { useAuth } from "../../context/auth";
 
 export function SecurityTab() {
   const [passwords, setPasswords] = useState({
@@ -39,10 +19,9 @@ export function SecurityTab() {
     new: "",
     confirm: "",
   });
-  // const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
+
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [loading, setLoading] = useState(false);
-  // const { user } = useAuth();
 
   const calculatePasswordStrength = (password: string) => {
     let strength = 0;
@@ -65,7 +44,7 @@ export function SecurityTab() {
       alert("Please fill all fields");
       return;
     }
-    alert(passwordStrength);
+
     if (passwordStrength < 100) {
       alert("Password is too weak");
       return;
@@ -77,7 +56,7 @@ export function SecurityTab() {
     }
     try {
       setLoading(true);
-      await api.post("/reset-password", {
+      await api.put(`/account/update-password`, {
         currentPassword: passwords.current,
         newPassword: passwords.new,
       });

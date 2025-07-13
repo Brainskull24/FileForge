@@ -9,26 +9,10 @@ import {
 } from "../ui/card";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
-// import {
-//   Table,
-//   TableBody,
-//   TableCell,
-//   TableHead,
-//   TableHeader,
-//   TableRow,
-// } from "../ui/table";
 import { Progress } from "../ui/progress";
-import {
-  // CreditCard,
-  // Download,
-  // Trash2,
-  Plus,
-  Star,
-  DollarSign,
-  TrendingUp,
-} from "lucide-react";
+import { Plus, Star, DollarSign, TrendingUp } from "lucide-react";
 import api from "../../lib/axios";
-// import { invoiceData, paymentMethodsData } from "../../data/accountConfigs";
+import { useAuth } from "../../context/auth";
 
 export function BillingTab() {
   // const [paymentMethods] = useState(paymentMethodsData);
@@ -36,7 +20,7 @@ export function BillingTab() {
   const [balance, setBalance] = useState(0);
   const [limit, setLimit] = useState(2000);
   // const [loading, setLoading] = useState(false);
-
+  const { user } = useAuth();
   useEffect(() => {
     const fetchCredits = async () => {
       try {
@@ -50,6 +34,9 @@ export function BillingTab() {
     };
     fetchCredits();
   }, []);
+
+  const totalCredits = 500;
+  const usedCredits = totalCredits - (user?.credits ?? 0);
 
   const used = limit - balance;
   const percentUsed = Math.round((used / limit) * 100);
@@ -74,7 +61,7 @@ export function BillingTab() {
                 <Badge variant="default">Active</Badge>
               </div>
               <ul className="text-sm text-muted-foreground space-y-1">
-                <li>• Up to 10 file conversions per month</li>
+                <li>• Up to 40 file conversions per month</li>
                 <li>• Standard processing queue</li>
                 <li>• No API access</li>
                 <li>• Basic feature set</li>
@@ -207,13 +194,13 @@ export function BillingTab() {
             <div className="flex items-center justify-between">
               <Label>Current Balance</Label>
               <span className="text-2xl font-bold">
-                {balance.toLocaleString()} credits
+                {user?.credits} credits
               </span>
             </div>
             <Progress value={percentUsed} className="w-full" />
             <p className="text-sm text-muted-foreground">
-              You've used {used.toLocaleString()} of {limit.toLocaleString()}{" "}
-              credits this month
+              You've used {usedCredits} of {500} credits this
+              month
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
