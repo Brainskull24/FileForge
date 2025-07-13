@@ -3,7 +3,7 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { FileText, Linkedin, Mail, Instagram, Youtube } from "lucide-react";
 import { Link } from "react-router-dom";
-import { toast } from "../../hooks/use-toast";
+import { toast } from "sonner";
 import api from "../../lib/axios";
 import { useAuth } from "../../context/auth";
 
@@ -15,10 +15,8 @@ const Footer = () => {
     if (!email) return;
     if (!user) {
       alert("Please log in to subscribe.");
-      toast({
-        title: "Not logged in",
+      toast("Not logged in", {
         description: "Please log in to subscribe.",
-        variant: "destructive",
       });
       return;
     }
@@ -26,10 +24,8 @@ const Footer = () => {
       alert(
         "Email mismatch. Please use the email associated with your account."
       );
-      toast({
-        title: "Email mismatch",
+      toast("Email mismatch", {
         description: "Please use the email associated with your account.",
-        variant: "destructive",
       });
       return;
     }
@@ -37,25 +33,20 @@ const Footer = () => {
     try {
       const res = await api.post("/marketing/subscribe", { email });
       alert("Subscribed successfully!");
-      toast({
-        title: "Subscribed!",
+      toast("Subscribed!", {
         description: res.data.message || "You're now subscribed.",
       });
       setEmail("");
     } catch (err: any) {
       if (err.response) {
         alert("Subscription failed. Please try again.");
-        toast({
-          title: "Error",
+        toast("Error", {
           description: err.response.data.error || "Subscription failed.",
-          variant: "destructive",
         });
       } else {
         alert("Network error. Please try again later.");
-        toast({
-          title: "Network Error",
+        toast("Network Error", {
           description: "Try again later.",
-          variant: "destructive",
         });
       }
     }
