@@ -3,6 +3,11 @@ import { Button } from "../../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
 import { Label } from "../../ui/label";
 
+interface FormatOption {
+  id: string;
+  label: string;
+}
+
 interface FormatSelectorProps {
   selectedTool: string;
   currentTool: any;
@@ -16,6 +21,32 @@ export function FormatSelector({
   selectedFormat,
   setSelectedFormat,
 }: FormatSelectorProps) {
+  const renderFormatButtons = (
+    title: string,
+    formats: FormatOption[] | undefined,
+    prefixLabel: string
+  ) => {
+    if (!formats || formats.length === 0) return null;
+
+    return (
+      <div className="space-y-4">
+        <Label className="text-sm font-medium mb-2 block">{title}</Label>
+        <div className="grid grid-cols-3 md:grid-cols-5 gap-2">
+          {formats.map((format) => (
+            <Button
+              key={format.id}
+              variant={selectedFormat === format.id ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSelectedFormat(format.id)}
+            >
+              {prefixLabel} → {format.label}
+            </Button>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -23,107 +54,33 @@ export function FormatSelector({
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {/* PDF Conversion */}
-          {selectedTool === "pdf-conversion" && (
-            <div className="space-y-4">
-              <div>
-                <Label className="text-sm font-medium mb-2 block">
-                  Convert TO PDF
-                </Label>
-                <div className="grid grid-cols-3 md:grid-cols-5 gap-2">
-                  {currentTool.formats.toPdf?.map((format: string) => (
-                    <Button
-                      key={format}
-                      variant={
-                        selectedFormat === `to-pdf-${format}`
-                          ? "default"
-                          : "outline"
-                      }
-                      size="sm"
-                      onClick={() => setSelectedFormat(`to-pdf-${format}`)}
-                    >
-                      {format} → PDF
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
+          {selectedTool === "pdf-conversion" &&
+            renderFormatButtons(
+              "Convert From PDF",
+              currentTool.formats.fromPdf,
+              "PDF"
+            )}
 
-          {/* Word Conversion */}
-          {selectedTool === "word-conversion" && (
-            <div className="space-y-4">
-              <div>
-                <Label className="text-sm font-medium mb-2 block">
-                  Convert TO Word
-                </Label>
-                <div className="grid grid-cols-3 md:grid-cols-5 gap-2">
-                  {currentTool.formats.toWord?.map((format: string) => (
-                    <Button
-                      key={format}
-                      variant={
-                        selectedFormat === `to-word-${format}`
-                          ? "default"
-                          : "outline"
-                      }
-                      size="sm"
-                      onClick={() => setSelectedFormat(`to-word-${format}`)}
-                    >
-                      {format} → Word
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
+          {selectedTool === "word-conversion" &&
+            renderFormatButtons(
+              "Convert From Word",
+              currentTool.formats.fromWord,
+              "Word"
+            )}
 
-          {/* Excel Conversion */}
-          {selectedTool === "excel-conversion" && (
-            <div className="space-y-4">
-              <div>
-                <Label className="text-sm font-medium mb-2 block">
-                  Convert TO Excel
-                </Label>
-                <div className="grid grid-cols-3 md:grid-cols-5 gap-2">
-                  {currentTool.formats.toExcel?.map((format: string) => (
-                    <Button
-                      key={format}
-                      variant={
-                        selectedFormat === `to-excel-${format}`
-                          ? "default"
-                          : "outline"
-                      }
-                      size="sm"
-                      onClick={() => setSelectedFormat(`to-excel-${format}`)}
-                    >
-                      {format} → Excel
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
+          {selectedTool === "excel-conversion" &&
+            renderFormatButtons(
+              "Convert From Excel",
+              currentTool.formats.fromExcel,
+              "Excel"
+            )}
 
-          {/* Other conversion tools */}
-          {currentTool.formats.supported && (
-            <div>
-              <Label className="text-sm font-medium mb-2 block">
-                Select Output Format
-              </Label>
-              <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
-                {currentTool.formats.supported.map((format: string) => (
-                  <Button
-                    key={format}
-                    variant={selectedFormat === format ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setSelectedFormat(format)}
-                  >
-                    {format}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          )}
+          {currentTool.formats.supported &&
+            renderFormatButtons(
+              "Select Output Format",
+              currentTool.formats.supported,
+              ""
+            )}
         </div>
       </CardContent>
     </Card>

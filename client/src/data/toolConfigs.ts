@@ -1,5 +1,10 @@
 export type ToolType = "text" | "file" | "coming-soon";
 
+interface FormatOption {
+  id: string;
+  label: string;
+}
+
 interface BaseToolConfig {
   name: string;
   description: string;
@@ -9,12 +14,9 @@ interface BaseToolConfig {
   fileTypes?: string[];
   category?: string;
   formats?: {
-    toPdf?: string[];
-    fromPdf?: string[];
-    toWord?: string[];
-    fromWord?: string[];
-    toExcel?: string[];
-    fromExcel?: string[];
+    fromPdf?: FormatOption[];
+    fromWord?: FormatOption[];
+    fromExcel?: FormatOption[];
     supported?: string[];
   };
 }
@@ -236,10 +238,16 @@ export const toolConfigs: Record<string, BaseToolConfig> = {
       "text/*",
     ],
     formats: {
-      toPdf: ["Word", "Excel", "PowerPoint", "Images", "Text"],
-      // fromPdf: ["Word", "Excel", "Images", "Text", "HTML"],
+      fromPdf: [
+        { id: "pdf-to-word", label: "Word" },
+        { id: "pdf-to-excel", label: "Excel" },
+        { id: "pdf-to-images", label: "Images" },
+        { id: "pdf-to-text", label: "Text" },
+        { id: "pdf-to-html", label: "HTML" },
+      ],
     },
   },
+
   "word-conversion": {
     name: "Word Documents",
     description: "Convert to/from Word document formats",
@@ -254,10 +262,15 @@ export const toolConfigs: Record<string, BaseToolConfig> = {
       "application/rtf",
     ],
     formats: {
-      toWord: ["PDF", "Text", "HTML", "RTF"],
-      // fromWord: ["PDF", "Text", "HTML", "RTF"],
+      fromWord: [
+        { id: "word-to-pdf", label: "PDF" },
+        { id: "word-to-text", label: "Text" },
+        { id: "word-to-html", label: "HTML" },
+        { id: "word-to-rtf", label: "RTF" },
+      ],
     },
   },
+
   "excel-conversion": {
     name: "Excel Spreadsheets",
     description: "Convert to/from Excel spreadsheet formats",
@@ -272,10 +285,15 @@ export const toolConfigs: Record<string, BaseToolConfig> = {
       "text/plain",
     ],
     formats: {
-      toExcel: ["CSV", "PDF", "HTML", "Text"],
-      // fromExcel: ["CSV", "PDF", "HTML", "Text"],
+      fromExcel: [
+        { id: "excel-to-csv", label: "CSV" },
+        { id: "excel-to-pdf", label: "PDF" },
+        { id: "excel-to-html", label: "HTML" },
+        { id: "excel-to-text", label: "Text" },
+      ],
     },
   },
+
   "image-conversion": {
     name: "Image Conversion",
     description: "Convert between different image formats",

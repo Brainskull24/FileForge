@@ -3,10 +3,15 @@ from datetime import datetime
 from typing import Optional
 from pathlib import Path
 
-import mammoth
-import pypandoc
-from docx import Document
-from comtypes.client import CreateObject
+import mammoth # type: ignore
+import pypandoc # type: ignore
+from docx import Document # type: ignore
+import sys
+from docx2pdf import convert as docx2pdf_convert # type: ignore
+from pathlib import Path
+import sys
+from pathlib import Path
+from typing import Optional
 
 from app.config.db import MongoDB
 
@@ -40,26 +45,24 @@ class WordConversion:
         })
 
     def to_pdf(self, file_path: str) -> Optional[str]:
-        """
-        Converts a DOCX file to PDF using the Word COM automation (Windows only).
-
-        Args:
-            file_path (str): Path to the input DOCX file.
-
-        Returns:
-            Optional[str]: Path to the output PDF file, or None if failed.
-        """
+        output_path = str(Path(file_path).with_suffix(".pdf"))
         try:
-            word = CreateObject("Word.Application")
-            word.Visible = False
-            doc = word.Documents.Open(file_path)
-            output_path = str(Path(file_path).with_suffix(".pdf"))
-            doc.SaveAs(output_path, FileFormat=17)  # 17 = wdFormatPDF
-            doc.Close()
-            word.Quit()
+            if sys.platform == "win32":
+                from comtypes.client import CreateObject  # import here, only on Windows
+                word = CreateObject("Word.Application")
+                word.Visible = False
+                doc = word.Documents.Open(file_path)
+                doc.SaveAs(output_path, FileFormat=17)  # wdFormatPDF
+                doc.Close()
+                word.Quit()
+            else:
+                # Use your macOS-compatible conversion here
+                docx2pdf_convert(file_path, output_path)
+            
             self._log_to_db(file_path, "word-to-pdf", "pdf")
             return output_path
         except Exception as e:
+            print(f"PDF conversion failed: {e}")
             return None
 
     def to_html(self, file_path: str) -> str:

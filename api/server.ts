@@ -7,6 +7,7 @@ import authRoutes from "./routes/authRoutes";
 import marketingRoutes from "./routes/marketingRoutes";
 import accountRoutes from "./routes/accountRoutes";
 import pdfRoutes from "./routes/pdfRoutes"; 
+import conversionRoutes from "./routes/conversionRoutes"
 import { connectDB } from "./config/db";
 
 dotenv.config();
@@ -23,6 +24,7 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/marketing", marketingRoutes);
 app.use("/api/v1/account", accountRoutes);
 app.use("/api/v1/pdf", pdfRoutes);
+app.use("/api/v1/file-conversion", conversionRoutes);
 
 const PORT = process.env.PORT || 4000;
 connectDB().then(() => {

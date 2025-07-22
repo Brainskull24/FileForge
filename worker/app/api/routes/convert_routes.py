@@ -1,5 +1,5 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException, Query
-from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, Response, FileResponse
+from fastapi import APIRouter, UploadFile, File, HTTPException, Query # type: ignore
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, Response, FileResponse # type: ignore
 from app.services.conversions.pdfConversion import PDFConversion
 from app.services.conversions.wordConversion import WordConversion
 from app.services.conversions.markdownConversion import MarkdownConversion

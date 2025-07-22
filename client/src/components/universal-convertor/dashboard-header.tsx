@@ -27,7 +27,8 @@ export function DashboardHeader() {
   const { authType, logout, user } = useAuth();
   const navigate = useNavigate();
 
-  const creditPercentage = ((user?.credits ?? 0) / 500) * 100;
+  const MAX_CREDITS = 500;
+  const creditPercentage = ((user?.credits ?? 0) / MAX_CREDITS) * 100;
 
   const handleLogout = async () => {
     try {
@@ -77,13 +78,6 @@ export function DashboardHeader() {
           <Crown className="h-4 w-4 mr-2" />
           Upgrade to Pro
         </Button>
-
-        {/* Notifications */}
-        {/* <Button variant="ghost" size="sm">
-          <Bell className="h-4 w-4" />
-        </Button> */}
-
-        {/* User Menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="sm">

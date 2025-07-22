@@ -17,7 +17,9 @@ interface FileProcessorProps {
   uploadedFiles: File[];
   setUploadedFiles: React.Dispatch<React.SetStateAction<File[]>>;
   fileMeta: { name: string; size: string; type: string } | null;
-  setFileMeta: React.Dispatch<React.SetStateAction<{ name: string; size: string; type: string } | null>>;
+  setFileMeta: React.Dispatch<
+    React.SetStateAction<{ name: string; size: string; type: string } | null>
+  >;
   base64Output: string;
   setBase64Output: React.Dispatch<React.SetStateAction<string>>;
   selectedFormat: string;
@@ -41,10 +43,13 @@ export function FileProcessor({
   showEncodingOutput,
   setShowEncodingOutput,
 }: FileProcessorProps) {
-  const handleFiles = useCallback((files: File[]) => {
-    const file = files[0]; // Only 1 file allowed
-    setUploadedFiles([file]);
-  }, [setUploadedFiles]);
+  const handleFiles = useCallback(
+    (files: File[]) => {
+      const file = files[0]; // Only 1 file allowed
+      setUploadedFiles([file]);
+    },
+    [setUploadedFiles]
+  );
 
   const formatFileSize = (size: number): string => {
     if (size < 1024) return `${size} B`;
@@ -57,6 +62,7 @@ export function FileProcessor({
 
     const file = uploadedFiles[0];
 
+    // Encoding tools (special local processing)
     const encodingTools = [
       "file-to-base64",
       "image-to-base64",
@@ -67,11 +73,15 @@ export function FileProcessor({
     ];
 
     if (encodingTools.includes(selectedTool)) {
+      // Local encoding logic
       FileEncodingLogic.encodeFiles([file], selectedTool)
         .then((result: string) => {
           const lines = result.split("\n");
           const cleanStart = lines.findIndex((l) => l === "Clean Base64:");
-          const cleanBase64 = cleanStart !== -1 ? lines.slice(cleanStart + 1).join("\n") : "";
+          const cleanBase64 =
+            cleanStart !== -1
+              ? lines.slice(cleanStart + 1).join("\n")
+              : "";
 
           setFileMeta({
             name: file.name,
@@ -88,7 +98,10 @@ export function FileProcessor({
           setShowEncodingOutput(true);
         });
     } else {
-      const operation = selectedFormat || currentTool?.name || "Process";
+      // Backend conversion logic
+      const operation =
+        selectedFormat || currentTool?.formats?.supported?.[0]?.id || "process";
+
       onFileProcess([file], operation);
     }
 
@@ -99,6 +112,7 @@ export function FileProcessor({
     <div className="space-y-6">
       <FileUploadArea currentTool={currentTool} onFilesSelected={handleFiles} />
 
+      {/* Show FormatSelector only if tool has formats */}
       {currentTool.formats && (
         <FormatSelector
           selectedTool={selectedTool}
@@ -114,7 +128,7 @@ export function FileProcessor({
         className="w-full"
       >
         <Play className="h-4 w-4 mr-2" />
-        {currentTool.formats ? "Convert Files" : "Process Files"}
+        {currentTool.formats ? "Convert File" : "Process File"}
       </Button>
 
       {showEncodingOutput && (
@@ -127,7 +141,9 @@ export function FileProcessor({
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                 <div>
                   <strong>File Name:</strong>
-                  <p className="text-muted-foreground truncate max-w-[200px]">{fileMeta.name}</p>
+                  <p className="text-muted-foreground truncate max-w-[200px]">
+                    {fileMeta.name}
+                  </p>
                 </div>
                 <div>
                   <strong>File Size:</strong>

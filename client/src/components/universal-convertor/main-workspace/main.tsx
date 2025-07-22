@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { Badge } from "../../ui/badge";
 import { Info } from "lucide-react";
 import { toolConfigs } from "../../../data/toolConfigs";
@@ -15,11 +15,26 @@ interface MainWorkspaceProps {
   userCredits: UserCredits;
 }
 
+// Infer tool config type from the data object
+type ToolConfigs = typeof toolConfigs;
+type ToolKey = keyof ToolConfigs;
+type ToolConfig = ToolConfigs[ToolKey];
+
+/**
+ * Safely resolve tool ID → config (or null if missing).
+ * Helps avoid unsafe casts everywhere.
+ */
+function getToolConfig(id: string | null): ToolConfig | null {
+  if (!id) return null;
+  return (toolConfigs as Record<string, ToolConfig>)[id] ?? null;
+}
+
 export function MainWorkspace({
   selectedTool,
   onFileProcess,
   userCredits,
 }: MainWorkspaceProps) {
+  // --- Text tool state ---
   const [inputText, setInputText] = useState("");
   const [outputText, setOutputText] = useState("");
   const [outputBlob, setOutputBlob] = useState<Blob | null>(null);
@@ -32,26 +47,33 @@ export function MainWorkspace({
   } | null>(null);
   const [showOutput, setShowOutput] = useState(false);
 
-  // Shared file state
+  // --- File tool state ---
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-  const [fileMeta, setFileMeta] = useState<{ name: string; size: string; type: string } | null>(null);
-  const [base64Output, setBase64Output] = useState<string>("");
+  const [fileMeta, setFileMeta] = useState<{
+    name: string;
+    size: string;
+    type: string;
+  } | null>(null);
+  const [base64Output, setBase64Output] = useState("");
   const [selectedFormat, setSelectedFormat] = useState("");
   const [showEncodingOutput, setShowEncodingOutput] = useState(false);
 
-  const currentTool = selectedTool
-    ? toolConfigs[selectedTool as keyof typeof toolConfigs]
-    : null;
+  // --- Resolve current tool ---
+  const currentTool = useMemo(
+    () => getToolConfig(selectedTool),
+    [selectedTool]
+  );
 
+  // --- Reset when switching tools ---
   const resetState = useCallback(() => {
+    // text
     setInputText("");
     setOutputText("");
     setOutputBlob(null);
     setDownloadFilename(null);
     setOutputFileInfo(null);
     setShowOutput(false);
-
-    // Also reset file processor state
+    // file
     setUploadedFiles([]);
     setFileMeta(null);
     setBase64Output("");
@@ -63,7 +85,37 @@ export function MainWorkspace({
     resetState();
   }, [selectedTool, resetState]);
 
+  // --- Early return ---
   if (!selectedTool || !currentTool) return <Welcome />;
+
+  // --- Grouped prop bundles (cleaner children) ---
+  const textState = {
+    inputText,
+    setInputText,
+    outputText,
+    setOutputText,
+    outputBlob,
+    setOutputBlob,
+    downloadFilename,
+    setDownloadFilename,
+    outputFileInfo,
+    setOutputFileInfo,
+    showOutput,
+    setShowOutput,
+  };
+
+  const fileState = {
+    uploadedFiles,
+    setUploadedFiles,
+    fileMeta,
+    setFileMeta,
+    base64Output,
+    setBase64Output,
+    selectedFormat,
+    setSelectedFormat,
+    showEncodingOutput,
+    setShowEncodingOutput,
+  };
 
   return (
     <div className="flex-1 overflow-auto">
@@ -82,42 +134,21 @@ export function MainWorkspace({
           <p className="text-muted-foreground">{currentTool.description}</p>
         </div>
 
-        {/* Text Tool */}
+        {/* Conditional Tool Body */}
         {currentTool.type === "text" && (
           <TextProcessor
             selectedTool={selectedTool}
             currentTool={currentTool}
-            inputText={inputText}
-            setInputText={setInputText}
-            outputText={outputText}
-            setOutputText={setOutputText}
-            outputBlob={outputBlob}
-            setOutputBlob={setOutputBlob}
-            downloadFilename={downloadFilename}
-            setDownloadFilename={setDownloadFilename}
-            outputFileInfo={outputFileInfo}
-            setOutputFileInfo={setOutputFileInfo}
-            showOutput={showOutput}
-            setShowOutput={setShowOutput}
+            {...textState}
           />
         )}
 
-        {/* File Tool */}
         {currentTool.type === "file" && (
           <FileProcessor
             selectedTool={selectedTool}
             currentTool={currentTool}
             onFileProcess={onFileProcess}
-            uploadedFiles={uploadedFiles}
-            setUploadedFiles={setUploadedFiles}
-            fileMeta={fileMeta}
-            setFileMeta={setFileMeta}
-            base64Output={base64Output}
-            setBase64Output={setBase64Output}
-            selectedFormat={selectedFormat}
-            setSelectedFormat={setSelectedFormat}
-            showEncodingOutput={showEncodingOutput}
-            setShowEncodingOutput={setShowEncodingOutput}
+            {...fileState}
           />
         )}
       </div>

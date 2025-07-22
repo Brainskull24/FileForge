@@ -1,10 +1,11 @@
+import { useState } from "react";
 import api from "../../lib/axios";
+
 import { SidebarProvider } from "../ui/sidebar";
 import { AppSidebar } from "./app-sidebar";
 import { DashboardHeader } from "./dashboard-header";
 import { MainWorkspace } from "./main-workspace/main";
 import { ResultsPanel } from "./results-panel";
-import { useState, useEffect } from "react";
 
 export interface ProcessingJob {
   id: string;
@@ -14,7 +15,6 @@ export interface ProcessingJob {
   operation: string;
   status: "queued" | "processing" | "completed" | "failed";
   progress: number;
-  estimatedTime?: number;
   downloadUrl?: string;
   createdAt: Date;
 }
@@ -34,157 +34,30 @@ export function UniversalConverterDashboard() {
     used: 150,
   });
 
-  // Simulate real-time processing updates
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setProcessingJobs((prev) =>
-        prev.map((job) => {
-          if (job.status === "processing" && job.progress < 100) {
-            const newProgress = Math.min(
-              job.progress + Math.random() * 15,
-              100
-            );
-            return {
-              ...job,
-              progress: newProgress,
-              status: newProgress >= 100 ? "completed" : "processing",
-              downloadUrl:
-                newProgress >= 100 ? `/downloads/${job.id}` : undefined,
-            };
-          }
-          return job;
-        })
-      );
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const handleToolSelect = (toolId: string) => {
-    setSelectedTool(toolId);
-  };
-
-  // const handleFileProcess = (files: File[], operation: string) => {
-  //   const newJobs: ProcessingJob[] = files.map((file) => ({
-  //     id: Math.random().toString(36).substr(2, 9),
-  //     fileName: file.name,
-  //     fileSize: file.size,
-  //     fileType: file.type,
-  //     operation,
-  //     status: "queued",
-  //     progress: 0,
-  //     createdAt: new Date(),
-  //   }));
-
-  //   setProcessingJobs((prev) => [...newJobs, ...prev]);
-
-  //   // Start processing after a short delay
-  //   setTimeout(() => {
-  //     setProcessingJobs((prev) =>
-  //       prev.map((job) =>
-  //         newJobs.find((newJob) => newJob.id === job.id)
-  //           ? { ...job, status: "processing" as const }
-  //           : job
-  //       )
-  //     );
-  //   }, 500);
-
-  //   // Deduct credits
-  //   const creditCost = newJobs.length * 5;
-  //   setUserCredits((prev) => ({
-  //     ...prev,
-  //     current: Math.max(0, prev.current - creditCost),
-  //     used: prev.used + creditCost,
-  //   }));
-  // };
-
-  const handleFileProcess = async (files: File[], operation: string) => {
-    console.log("Selected operation:", operation);
-    console.log("Received files:", files);
-
-    const newJobs: ProcessingJob[] = files.map((file) => ({
-      id: Math.random().toString(36).substr(2, 9),
+  const addNewJobs = (files: File[], operation: string): ProcessingJob[] => {
+    const newJobs = files.map((file) => ({
+      id: Math.random().toString(36).slice(2),
       fileName: file.name,
       fileSize: file.size,
       fileType: file.type,
       operation,
-      status: "queued",
+      status: "queued" as const,
       progress: 0,
       createdAt: new Date(),
     }));
 
     setProcessingJobs((prev) => [...newJobs, ...prev]);
+    return newJobs;
+  };
 
-    // Mark as "processing"
-    setTimeout(() => {
-      setProcessingJobs((prev) =>
-        prev.map((job) =>
-          newJobs.some((newJob) => newJob.id === job.id)
-            ? { ...job, status: "processing" }
-            : job
-        )
-      );
-    }, 500);
+  const updateJob = (jobId: string, updates: Partial<ProcessingJob>) => {
+    setProcessingJobs((prev) =>
+      prev.map((j) => (j.id === jobId ? { ...j, ...updates } : j))
+    );
+  };
 
-    // Send to backend - Process each file individually
-    for (const job of newJobs) {
-      const formData = new FormData();
-      const file = files.find((f) => f.name === job.fileName);
-
-      if (!file) {
-        console.warn("File not found in list:", job.fileName);
-        continue;
-      }
-
-      // Make sure we're appending the file correctly
-      formData.append("file", file, file.name);
-
-      try {
-        const { data } = await api.post(
-          `/file-conversion/${operation}`,
-          formData,
-          {
-            responseType: "blob",
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-            onUploadProgress: (progressEvent: any) => {
-              const percent = Math.round(
-                (progressEvent.loaded * 100) / progressEvent.total
-              );
-              setProcessingJobs((prev) =>
-                prev.map((j) =>
-                  j.id === job.id ? { ...j, progress: percent } : j
-                )
-              );
-            },
-          }
-        );
-
-        const blob = new Blob([data]);
-        const url = URL.createObjectURL(blob);
-        setProcessingJobs((prev) =>
-          prev.map((j) =>
-            j.id === job.id
-              ? {
-                  ...j,
-                  status: "completed",
-                  progress: 100,
-                  downloadUrl: url,
-                }
-              : j
-          )
-        );
-      } catch (err) {
-        console.error("File processing failed for:", job.fileName, err);
-        setProcessingJobs((prev) =>
-          prev.map((j) => (j.id === job.id ? { ...j, status: "failed" } : j))
-        );
-      }
-    }
-
-    // Deduct credits
-    const creditCost = newJobs.length * 5;
+  const deductCredits = (count: number) => {
+    const creditCost = count * 5;
     setUserCredits((prev) => ({
       ...prev,
       current: Math.max(0, prev.current - creditCost),
@@ -192,27 +65,93 @@ export function UniversalConverterDashboard() {
     }));
   };
 
+  const uploadFile = async (
+    job: ProcessingJob,
+    file: File,
+    operation: string
+  ) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const { data, headers } = await api.post(
+        `/file-conversion/${operation}`,
+        formData,
+        {
+          responseType: "blob",
+          headers: { "Content-Type": "multipart/form-data" },
+          onUploadProgress: (e) => {
+            const percent = Math.round((e.loaded * 100) / (e.total || 1));
+            updateJob(job.id, { progress: percent, status: "processing" });
+          },
+        }
+      );
+
+      // --- Determine File Type & Name ---
+      const mimeType = headers["content-type"] || "application/octet-stream";
+      const blob = new Blob([data], { type: mimeType });
+      const downloadUrl = URL.createObjectURL(blob);
+
+      // Extract filename from Content-Disposition header if available
+      let downloadName = `converted-${file.name}`;
+      const disposition = headers["content-disposition"];
+      if (disposition && disposition.includes("filename=")) {
+        const match = disposition.match(/filename="?([^"]+)"?/);
+        if (match?.[1]) downloadName = match[1];
+      } else {
+        // Fallback mapping based on operation
+        const extMap: Record<string, string> = {
+          "pdf-to-word": ".docx",
+          "word-to-pdf": ".pdf",
+          "html-to-pdf": ".pdf",
+          "markdown-to-html": ".html",
+        };
+        const fallbackExt = extMap[operation] || "";
+        if (!file.name.endsWith(fallbackExt)) {
+          const base = file.name.replace(/\.[^.]+$/, "");
+          downloadName = `${base}${fallbackExt}`;
+        }
+      }
+
+      updateJob(job.id, {
+        status: "completed",
+        progress: 100,
+        downloadUrl,
+        fileName: downloadName,
+      });
+    } catch (error) {
+      console.error(`Failed to process ${job.fileName}`, error);
+      updateJob(job.id, { status: "failed" });
+    }
+  };
+
+  const handleFileProcess = async (files: File[], operation: string) => {
+    const newJobs = addNewJobs(files, operation);
+
+    deductCredits(newJobs.length);
+
+    for (const job of newJobs) {
+      const file = files.find((f) => f.name === job.fileName);
+      if (file) await uploadFile(job, file, operation);
+    }
+  };
+
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="flex h-screen w-full bg-background">
         <AppSidebar
           selectedTool={selectedTool}
-          onToolSelect={handleToolSelect}
+          onToolSelect={setSelectedTool}
         />
-
         <div className="flex flex-1 flex-col overflow-hidden">
           <DashboardHeader />
-
           <div className="flex flex-1 overflow-hidden">
             <MainWorkspace
               selectedTool={selectedTool}
               onFileProcess={handleFileProcess}
               userCredits={userCredits}
             />
-
-            <ResultsPanel
-              processingJobs={processingJobs}
-            />
+            <ResultsPanel processingJobs={processingJobs} />
           </div>
         </div>
       </div>
