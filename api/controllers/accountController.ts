@@ -103,3 +103,25 @@ export const addCredits = async (
 
   res.json({ message: "Credits added", currentCredits: user.credits });
 };
+
+export const deleteUserAvatar = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const user = await UserModel.findById(req.user?.id);
+
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    user.profilePic = undefined;
+    await user.save();
+
+    res.status(200).json({ message: "Avatar removed successfully." });
+  } catch (error) {
+    console.error("Error removing avatar:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};

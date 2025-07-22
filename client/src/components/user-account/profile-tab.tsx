@@ -29,6 +29,7 @@ export function ProfileTab() {
   // Local state for profile form
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [removingAvatar, setRemovingAvatar] = useState(false); // New state for remove loading
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatar, setAvatar] = useState("");
 
@@ -84,7 +85,7 @@ export function ProfileTab() {
     if (!name) return "U";
     const names = name.trim().split(" ");
     const initials =
-      names.length >= 2 ? names[0][0] + names[1][0] : names[0][0]
+      names.length >= 2 ? names[0][0] + names[1][0] : names[0][0];
     return initials.toUpperCase();
   };
 
@@ -139,6 +140,21 @@ export function ProfileTab() {
     setAvatar(URL.createObjectURL(file));
   };
 
+  const handleRemoveAvatar = async () => {
+    setRemovingAvatar(true);
+    try {
+      await api.delete("/account/user-avatar");
+      setAvatar("");
+      setAvatarFile(null);
+      alert("Avatar removed.");
+    } catch (err) {
+      console.error("Failed to remove avatar", err);
+      alert("Failed to remove avatar.");
+    } finally {
+      setRemovingAvatar(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -175,9 +191,19 @@ export function ProfileTab() {
                     className="absolute inset-0 opacity-0 cursor-pointer"
                   />
                 </Button>
-                <Button variant="outline" size="sm" disabled>
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Remove
+                {/* Updated Remove Button */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRemoveAvatar}
+                  disabled={!avatar || removingAvatar}
+                >
+                  {removingAvatar ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Trash2 className="h-4 w-4 mr-2" />
+                  )}
+                  {removingAvatar ? "Removing..." : "Remove"}
                 </Button>
               </div>
               <p className="text-sm text-muted-foreground">

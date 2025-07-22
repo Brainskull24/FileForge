@@ -4,6 +4,7 @@ import {
   updateAccountDetails,
   updatePassword,
   addCredits,
+  deleteUserAvatar,
 } from "../controllers/accountController";
 import { authenticate } from "../middlewares/authenticate"; // ✅ import middleware
 import multer from "multer";
@@ -15,6 +16,7 @@ const router = Router();
 // ✅ Protect all routes with `authenticate` middleware
 router.get("/details", authenticate, getAccountDetails);
 router.put("/update", upload.single("profilePic"), authenticate, updateAccountDetails);
+router.delete("/user-avatar", authenticate, deleteUserAvatar);
 router.put("/update-password", authenticate, updatePassword);
 router.post("/credit", authenticate, addCredits);
 
