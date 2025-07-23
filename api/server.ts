@@ -15,7 +15,7 @@ const app = express();
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://fileforge-v1.vercel.app/"
+  "https://fileforge-v1.vercel.app"
 ];
 
 app.use(

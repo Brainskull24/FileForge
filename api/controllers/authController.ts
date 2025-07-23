@@ -47,7 +47,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     verificationToken: token,
   });
 
-  const verificationLink = `http://localhost:4000/api/v1/auth/verify-email?token=${token}`;
+  const verificationLink = `https://fileforge-kqev.onrender.com/api/v1/auth/verify-email?token=${token}`;
   const html = getVerificationEmailHtml(name || "User", verificationLink);
 
   await sendEmail(email, "Verify Email Address", html);
@@ -116,7 +116,7 @@ export const resendVerification = async (
   user.verificationToken = token;
   await user.save();
 
-  const verificationLink = `http://localhost:4000/api/v1/auth/verify-email?token=${token}`;
+  const verificationLink = `https://fileforge-kqev.onrender.com/api/v1/auth/verify-email?token=${token}`;
   const html = getVerificationEmailHtml(user.name || "User", verificationLink);
 
   await sendEmail(email, "Verify Email Address", html);
