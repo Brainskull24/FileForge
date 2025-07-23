@@ -240,8 +240,8 @@ export const toolConfigs: Record<string, BaseToolConfig> = {
     formats: {
       fromPdf: [
         { id: "pdf-to-word", label: "Word" },
-        { id: "pdf-to-excel", label: "Excel" },
-        { id: "pdf-to-images", label: "Images" },
+        { id: "pdf-to-markdown", label: "Markdown" },
+        { id: "pdf-to-image", label: "Image" },
         { id: "pdf-to-text", label: "Text" },
         { id: "pdf-to-html", label: "HTML" },
       ],
@@ -266,7 +266,7 @@ export const toolConfigs: Record<string, BaseToolConfig> = {
         { id: "word-to-pdf", label: "PDF" },
         { id: "word-to-text", label: "Text" },
         { id: "word-to-html", label: "HTML" },
-        { id: "word-to-rtf", label: "RTF" },
+        { id: "word-to-makrdown", label: "Markdown" },
       ],
     },
   },
@@ -288,7 +288,7 @@ export const toolConfigs: Record<string, BaseToolConfig> = {
       fromExcel: [
         { id: "excel-to-csv", label: "CSV" },
         { id: "excel-to-pdf", label: "PDF" },
-        { id: "excel-to-html", label: "HTML" },
+        { id: "excel-to-json", label: "JSON" },
         { id: "excel-to-text", label: "Text" },
       ],
     },

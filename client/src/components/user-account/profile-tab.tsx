@@ -24,7 +24,7 @@ import {
 } from "../ui/select";
 
 export function ProfileTab() {
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
 
   // Local state for profile form
   const [loading, setLoading] = useState(true);
@@ -117,6 +117,10 @@ export function ProfileTab() {
       const { data } = await api.put("/account/update", form, {
         headers: { "Content-Type": "multipart/form-data" },
       });
+
+      if (data.user) {
+        setUser(data.user); // <-- Update user in auth context
+      }
 
       if (data.profilePic) {
         setAvatar(data.profilePic);

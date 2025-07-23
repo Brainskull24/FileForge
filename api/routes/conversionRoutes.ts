@@ -30,6 +30,8 @@ router.post("/:operation", upload.single("file"), async (req, res) => {
       operation
     )}`;
 
+    console.log(pythonUrl)
+
     // Send file to Python backend
     const pythonResponse = await axios.post(pythonUrl, formData, {
       headers: {

@@ -57,7 +57,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           name: displayName,
           uid,
           photo: photoURL,
-          credits: 0
+          credits: 0,
         };
 
         setUser(userData);
