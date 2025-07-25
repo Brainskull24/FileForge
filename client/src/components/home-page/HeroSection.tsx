@@ -4,7 +4,7 @@ import { Button } from "../ui/button";
 import { ArrowRight, Play, Sparkles, Zap, Shield, Globe } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-export default function Component() {
+export default function HeroSection() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
@@ -142,6 +142,7 @@ export default function Component() {
                 size="lg"
                 variant="outline"
                 className="group border-2 border-white/30 text-white hover:bg-white/10 hover:scale-105 transition-all duration-300 backdrop-blur-sm px-8 py-4 text-lg font-semibold bg-transparent"
+                disabled
               >
                 <Play className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
                 View Live Demo

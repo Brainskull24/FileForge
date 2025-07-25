@@ -3,7 +3,6 @@ import bcrypt from "bcryptjs";
 import { UserModel } from "../models/userModel";
 import { AuthRequest } from "../middlewares/authenticate";
 
-// 1. Get account details
 export const getAccountDetails = async (
   req: AuthRequest,
   res: Response
@@ -20,7 +19,6 @@ export const getAccountDetails = async (
   res.json(user);
 };
 
-// 2. Update account details
 export const updateAccountDetails = async (
   req: AuthRequest,
   res: Response
@@ -56,7 +54,6 @@ export const updateAccountDetails = async (
   res.json({ message: "Account updated", user });
 };
 
-// 3. Update password
 export const updatePassword = async (
   req: AuthRequest,
   res: Response
@@ -85,7 +82,6 @@ export const updatePassword = async (
   res.json({ message: "Password updated successfully" });
 };
 
-// 4. Add credits to user
 export const addCredits = async (
   req: AuthRequest,
   res: Response
@@ -102,6 +98,24 @@ export const addCredits = async (
   await user.save();
 
   res.json({ message: "Credits added", currentCredits: user.credits });
+};
+
+export const updateCredits = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void> => {
+  const { creditsDeducted } = req.body;
+  const user = await UserModel.findById(req.user?.id);
+
+  if (!user) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+
+  user.credits = (user.credits || 0) - creditsDeducted;
+  await user.save();
+
+  res.json({ message: "Credits added", credits: user.credits });
 };
 
 export const deleteUserAvatar = async (

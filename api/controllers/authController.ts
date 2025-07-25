@@ -29,7 +29,6 @@ export const register = async (req: Request, res: Response): Promise<void> => {
   const hashed = await bcrypt.hash(password, 10);
   const token = crypto.randomBytes(20).toString("hex");
 
-  // 🧠 Convert file to base64 string
   let profilePicBase64: string | undefined = undefined;
   if (file) {
     const base64 = file.buffer.toString("base64");
@@ -64,14 +63,13 @@ export const verifyEmail = async (
   const user = await UserModel.findOne({ verificationToken: token });
 
   if (!user) {
-    // Return JSON instead of redirect if CLI/curl
     const acceptHeader = req.headers["accept"];
     if (acceptHeader && acceptHeader.includes("application/json")) {
       res.status(404).json({ error: "Invalid or expired token" });
       return;
     }
 
-    res.redirect("http://localhost:5173/verify-failed");
+    res.redirect("https://fileforge-v1.vercel.app/verify-failed");
     return;
   }
 
@@ -93,7 +91,7 @@ export const verifyEmail = async (
     maxAge: 1000 * 60,
     httpOnly: false,
   });
-  res.redirect("http://localhost:5173/verified");
+  res.redirect("https://fileforge-v1.vercel.app/verified");
 };
 
 export const resendVerification = async (
@@ -144,9 +142,9 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   const token = generateToken({ userId: user._id });
   res.cookie("token", token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production", 
+    secure: process.env.NODE_ENV === "production",
     sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
   await UserModel.findByIdAndUpdate(user._id, { lastLogin: new Date() });
@@ -188,7 +186,7 @@ export const forgotPassword = async (
   user.resetToken = token;
   await user.save();
 
-  const resetLink = `http://localhost:5173/reset-password?token=${token}`;
+  const resetLink = `https://fileforge-v1.vercel.app/reset-password?token=${token}`;
   const html = getResetPasswordEmailHtml(resetLink);
 
   await sendEmail(email, "Reset Your Password", html);

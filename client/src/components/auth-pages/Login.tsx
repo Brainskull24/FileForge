@@ -32,6 +32,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/auth";
 import EmailVerification from "./EmailVerification";
 import { flushSync } from "react-dom";
+import { toast } from "sonner";
 
 const AuthPage: React.FC = () => {
   const [mode, setMode] = useState<"login" | "signup">("login");
@@ -106,7 +107,9 @@ const AuthPage: React.FC = () => {
         error?.response?.data?.message ||
         error?.response?.data?.error ||
         "Something went wrong";
-      alert(message);
+      toast("Something went wrong", {
+        description: message,
+      });
     } finally {
       setLoading(false);
     }
@@ -116,13 +119,17 @@ const AuthPage: React.FC = () => {
     setResendLoading(true);
     try {
       await api.post("/auth/resend-verification", { email });
-      alert("Verification email sent successfully!");
+      toast("Mail Sent!", {
+        description: "Verification email sent successfully!",
+      });
     } catch (error: any) {
       const message =
         error?.response?.data?.message ||
         error?.response?.data?.error ||
         "Failed to resend email";
-      alert(message);
+      toast("Failed to resend email", {
+        description: message,
+      });
     } finally {
       setResendLoading(false);
     }
@@ -150,7 +157,9 @@ const AuthPage: React.FC = () => {
 
       navigate("/convertor");
     } catch (err: any) {
-      alert(err.message || "Authentication failed");
+      toast("Authentication failed", {
+        description: err.message,
+      });
     } finally {
       setLoading(false);
     }
@@ -350,6 +359,7 @@ const AuthPage: React.FC = () => {
                         onChange={(e) => setPhoneNumber(e.target.value)}
                         className="h-12 rounded-xl border-slate-200/60 bg-white/50 backdrop-blur-sm focus:border-blue-500 focus:ring-blue-500/20 focus:bg-white/80 transition-all duration-300 placeholder:text-slate-400"
                         placeholder="Enter your phone number"
+                        required
                       />
                     </div>
 

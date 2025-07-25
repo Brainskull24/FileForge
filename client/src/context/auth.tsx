@@ -14,7 +14,7 @@ interface Address {
   postalCode?: string;
 }
 
-interface User {
+export interface User {
   email: string | null;
   name: string | null;
   uid: string;
@@ -35,6 +35,7 @@ interface AuthContextType {
   loading: boolean;
   setUser: (user: User | null) => void;
   logout: () => void;
+  deductCredits: (count: number, credits: number) => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -47,7 +48,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     if (user) {
-      setLoading(false); 
+      setLoading(false);
       return;
     }
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -76,7 +77,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             email: backendUser.email,
             name: backendUser.name,
             uid: backendUser._id,
-            photo: backendUser.profilePic || null,
+            photo: backendUser.profilePic,
             role: backendUser.role || "",
             phone: backendUser.phone || "",
             credits: backendUser.credits,
@@ -115,9 +116,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setAuthType(null);
   };
 
+  const deductCredits = async (count: number, creditsPerUnit: number) => {
+    const creditCost = count * creditsPerUnit;
+  
+    try {
+      const { data } = await api.put("/account/credit", {
+        creditsDeducted: creditCost,
+      });
+  
+      // Defensive update
+      setUser((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          credits: data?.user?.credits ?? data?.credits ?? prev.credits ?? 0,
+        };
+      });
+    } catch (error) {
+      console.error("Failed to deduct credits", error);
+    }
+  };
+
   return (
     <AuthContext.Provider
-      value={{ user, token, authType, loading, setUser, logout }}
+      value={{ user, token, authType, loading, setUser, logout, deductCredits }}
     >
       {children}
     </AuthContext.Provider>

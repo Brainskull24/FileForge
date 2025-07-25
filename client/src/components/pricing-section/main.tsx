@@ -28,7 +28,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { Input } from "../ui/input";
 import {
   Accordion,
   AccordionContent,
@@ -178,21 +177,36 @@ export default function PricingPage() {
                 </ul>
               </CardContent>
               <CardFooter>
-                <Button variant={tier.ctaVariant} className="w-full" size="lg">
-                  {tier.cta}
-                </Button>
+                {tier.name != "Free" ? (
+                  <Button
+                    variant={tier.ctaVariant}
+                    className="w-full"
+                    size="lg"
+                    disabled
+                  >
+                    Coming Soon
+                  </Button>
+                ) : (
+                  <Button
+                    variant={tier.ctaVariant}
+                    className="w-full"
+                    size="lg"
+                  >
+                    Current Plan
+                  </Button>
+                )}
               </CardFooter>
             </Card>
           ))}
         </div>
 
         {/* Promo Code */}
-        <div className="flex justify-center mb-16">
+        {/* <div className="flex justify-center mb-16">
           <div className="flex gap-2 max-w-md w-full">
             <Input placeholder="Enter promo code" />
             <Button variant="outline">Apply</Button>
           </div>
-        </div>
+        </div> */}
 
         {/* Credit System Explanation */}
         <div className="mb-16">

@@ -1,6 +1,5 @@
 import mongoose, { Document, Schema } from "mongoose";
 
-// Address interface
 interface Address {
   street?: string;
   city?: string;
@@ -9,7 +8,6 @@ interface Address {
   postalCode?: string;
 }
 
-// User interface
 export interface IUser extends Document {
   name: string;
   email: string;
@@ -27,7 +25,6 @@ export interface IUser extends Document {
   updatedAt?: Date;
 }
 
-// Address sub-schema
 const addressSchema = new Schema<Address>(
   {
     street: { type: String },
@@ -39,7 +36,6 @@ const addressSchema = new Schema<Address>(
   { _id: false }
 );
 
-// Main user schema
 const userSchema = new Schema<IUser>(
   {
     name: { type: String, required: true },

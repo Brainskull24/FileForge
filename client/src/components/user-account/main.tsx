@@ -70,9 +70,9 @@ export default function AccountSettings() {
             {/* <TabsTrigger value="api-keys" className="lg:px-4">
               API Keys
             </TabsTrigger> */}
-            <TabsTrigger value="privacy" className="lg:px-4">
+            {/* <TabsTrigger value="privacy" className="lg:px-4">
               Privacy
-            </TabsTrigger>
+            </TabsTrigger> */}
           </TabsList>
 
           <div className="lg:flex lg:gap-6">
@@ -129,7 +129,7 @@ export default function AccountSettings() {
                 >
                   API Keys
                 </button> */}
-                <button
+                {/* <button
                   onClick={() => setActiveTab("privacy")}
                   className={`w-full text-left px-4 py-2 rounded-md text-sm transition-colors ${
                     activeTab === "privacy"
@@ -138,7 +138,7 @@ export default function AccountSettings() {
                   }`}
                 >
                   Privacy
-                </button>
+                </button> */}
               </div>
             </div>
 

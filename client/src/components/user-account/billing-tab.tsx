@@ -13,6 +13,7 @@ import { Progress } from "../ui/progress";
 import { Plus, Star, DollarSign, TrendingUp } from "lucide-react";
 import api from "../../lib/axios";
 import { useAuth } from "../../context/auth";
+import { toast } from "sonner";
 
 export function BillingTab() {
   // const [paymentMethods] = useState(paymentMethodsData);
@@ -199,8 +200,7 @@ export function BillingTab() {
             </div>
             <Progress value={percentUsed} className="w-full" />
             <p className="text-sm text-muted-foreground">
-              You've used {usedCredits} of {500} credits this
-              month
+              You've used {usedCredits} of {500} credits this month
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -208,7 +208,7 @@ export function BillingTab() {
               <Plus className="h-4 w-4 mr-2" />
               Purchase Credits
             </Button>
-            <Button variant="outline" onClick={() => alert("Coming soon")}>
+            <Button variant="outline" onClick={() => toast.info("Feature Coming soon!")}>
               <TrendingUp className="h-4 w-4 mr-2" />
               Usage Analytics
             </Button>

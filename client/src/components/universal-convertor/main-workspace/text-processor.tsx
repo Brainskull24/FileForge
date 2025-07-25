@@ -5,6 +5,8 @@ import { Textarea } from "../../ui/textarea";
 import { Play } from "lucide-react";
 import { TextProcessingLogic } from "./text-processing";
 import { OutputDisplay } from "./output-display";
+import { useAuth } from "../../../context/auth";
+import { toast } from "sonner";
 
 interface TextProcessorProps {
   selectedTool: string;
@@ -39,6 +41,8 @@ export function TextProcessor({
   showOutput,
   setShowOutput,
 }: TextProcessorProps) {
+  const { user, deductCredits } = useAuth();
+
   const handleTextProcess = async () => {
     if (!inputText.trim() || !selectedTool) return;
 
@@ -48,8 +52,16 @@ export function TextProcessor({
     setDownloadFilename(null);
     setOutputFileInfo(null);
 
-    const result = await TextProcessingLogic.processText(selectedTool, inputText);
+    if (!user?.credits || user?.credits < 5) {
+      toast.error("You dont have enough credits to perform this operation!");
+      return;
+    }
 
+    const result = await TextProcessingLogic.processText(
+      selectedTool,
+      inputText
+    );
+    deductCredits(1, 5);
     if (result.type === "text") {
       setOutputText(result.content!);
     } else if (result.type === "file") {

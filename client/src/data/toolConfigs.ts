@@ -229,17 +229,7 @@ export const toolConfigs: Record<string, BaseToolConfig> = {
     description: "Convert files to PDF or convert PDF to other formats",
     type: "file",
     acceptFiles: true,
-    fileTypes: [
-      "application/pdf",
-      "application/msword",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      "application/vnd.ms-excel",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "application/vnd.ms-powerpoint",
-      "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-      "image/*",
-      "text/*",
-    ],
+    fileTypes: ["application/pdf"],
     formats: {
       fromPdf: [
         { id: "pdf-to-word", label: "Word" },
@@ -259,10 +249,6 @@ export const toolConfigs: Record<string, BaseToolConfig> = {
     fileTypes: [
       "application/msword",
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      "application/pdf",
-      "text/*",
-      "text/html",
-      "application/rtf",
     ],
     formats: {
       fromWord: [
@@ -282,10 +268,6 @@ export const toolConfigs: Record<string, BaseToolConfig> = {
     fileTypes: [
       "application/vnd.ms-excel",
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "text/csv",
-      "application/pdf",
-      "text/html",
-      "text/plain",
     ],
     formats: {
       fromExcel: [

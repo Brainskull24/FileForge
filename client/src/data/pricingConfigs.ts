@@ -11,10 +11,9 @@ export const currencySymbols = {
   };
 
   export const creditOperations = [
-    { operation: "Basic encoding operation", credits: 1 },
-    { operation: "Simple file conversion", credits: 2 },
-    { operation: "Complex conversion (PDF to Word)", credits: 5 },
-    { operation: "Batch operation (per file)", credits: 10 },
+    { operation: "Basic Encoding/Decoding operation", credits: 5 },
+    { operation: "File conversions", credits: 10 },
+    { operation: "Batch operation (Coming Soon)", credits: 20 },
   ];
 
   export const getPricingTiers = (isAnnual: boolean) => [

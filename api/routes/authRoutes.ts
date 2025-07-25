@@ -10,7 +10,7 @@ import {
 } from "../controllers/authController";
 import multer from "multer";
 
-const storage = multer.memoryStorage(); // or diskStorage
+const storage = multer.memoryStorage(); 
 const upload = multer({ storage });
 const router = Router();
 

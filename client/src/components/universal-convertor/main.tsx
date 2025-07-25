@@ -6,6 +6,7 @@ import { AppSidebar } from "./app-sidebar";
 import { DashboardHeader } from "./dashboard-header";
 import { MainWorkspace } from "./main-workspace/main";
 import { ResultsPanel } from "./results-panel";
+import { useAuth } from "../../context/auth";
 
 export interface ProcessingJob {
   id: string;
@@ -21,17 +22,16 @@ export interface ProcessingJob {
 
 export interface UserCredits {
   current: number;
-  total: number;
   used: number;
 }
 
 export function UniversalConverterDashboard() {
   const [selectedTool, setSelectedTool] = useState<string | null>(null);
   const [processingJobs, setProcessingJobs] = useState<ProcessingJob[]>([]);
-  const [userCredits, setUserCredits] = useState<UserCredits>({
-    current: 850,
-    total: 1000,
-    used: 150,
+  const { user, deductCredits } = useAuth();
+  const [userCredits] = useState<UserCredits>({
+    current: user?.credits || 0,
+    used: 500 - (user?.credits || 0),
   });
 
   const addNewJobs = (files: File[], operation: string): ProcessingJob[] => {
@@ -54,15 +54,6 @@ export function UniversalConverterDashboard() {
     setProcessingJobs((prev) =>
       prev.map((j) => (j.id === jobId ? { ...j, ...updates } : j))
     );
-  };
-
-  const deductCredits = (count: number) => {
-    const creditCost = count * 5;
-    setUserCredits((prev) => ({
-      ...prev,
-      current: Math.max(0, prev.current - creditCost),
-      used: prev.used + creditCost,
-    }));
   };
 
   const uploadFile = async (
@@ -107,29 +98,29 @@ export function UniversalConverterDashboard() {
           "pdf-to-text": ".txt",
           "pdf-to-image": ".json", // returns JSON with image paths
           "pdf-to-markdown": ".md",
-        
+
           // Word conversions
           "word-to-pdf": ".pdf",
           "word-to-html": ".html",
           "word-to-text": ".txt",
           "word-to-markdown": ".md",
-        
+
           // Markdown conversions
           "markdown-to-html": ".html",
           "markdown-to-plaintext": ".txt",
           "markdown-to-pdf": ".pdf",
           "markdown-to-word": ".docx",
-        
+
           // HTML conversions
           "html-to-markdown": ".md",
           "html-to-pdf": ".pdf",
           "html-to-word": ".docx",
-        
+
           // Excel conversions
           "excel-to-csv": ".csv",
           "excel-to-json": ".json",
           "excel-to-pdf": ".pdf",
-        
+
           // Image conversions
           "image-to-pdf": ".pdf",
           "image-to-grayscale": ".png",
@@ -139,7 +130,7 @@ export function UniversalConverterDashboard() {
           "image-to-tiff": ".tiff",
           "image-to-webp": ".webp",
         };
-        
+
         const fallbackExt = extMap[operation] || "";
         if (!file.name.endsWith(fallbackExt)) {
           const base = file.name.replace(/\.[^.]+$/, "");
@@ -162,7 +153,7 @@ export function UniversalConverterDashboard() {
   const handleFileProcess = async (files: File[], operation: string) => {
     const newJobs = addNewJobs(files, operation);
 
-    deductCredits(newJobs.length);
+    deductCredits(newJobs.length, 10);
 
     for (const job of newJobs) {
       const file = files.find((f) => f.name === job.fileName);

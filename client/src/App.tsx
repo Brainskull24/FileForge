@@ -8,7 +8,6 @@ import BillingCredits from "./components/usage-analytics/main";
 import HelpCenter from "./components/help-and-support/main";
 import SecurityPrivacyPage from "./components/privacy-policy/main";
 import TermsOfService from "./components/terms-of-service/main";
-import AdminDashboard from "./components/admin-secure/main";
 import ContactSupportPage from "./components/contact-page/main";
 import CloudIntegrationPage from "./components/cloud-integration/coming-soon";
 import CLIDocsPage from "./components/cli-tool/coming-soon";
@@ -79,14 +78,14 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route
+        {/* <Route
           path="/admin"
           element={
             <ProtectedRoute>
               <AdminDashboard />
             </ProtectedRoute>
           }
-        />
+        /> */}
         <Route
           path="/cloud"
           element={

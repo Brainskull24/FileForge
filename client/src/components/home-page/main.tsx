@@ -1,10 +1,10 @@
-import Component from "./HeroSection";
 import TextUtils from "./TextUtils";
 import Features from "./Features";
 import PricingTeaser from "./PricingTeaser";
 import Social from "./SocialProof";
 import Footer from "./Footer";
 import Header from "./Header";
+import HeroSection from "./HeroSection";
 
 export default function Homepage() {
   return (
@@ -13,7 +13,7 @@ export default function Homepage() {
       <Header />
 
       {/* Hero Section */}
-      <Component />
+      <HeroSection />
 
       {/* Text Utils Section */}
       <TextUtils />

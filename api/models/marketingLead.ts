@@ -8,12 +8,19 @@ export interface IMarketingLead extends Document {
 
 const marketingLeadSchema = new Schema<IMarketingLead>(
   {
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
     email: { type: String, required: true },
     name: { type: String, required: true },
   },
   { timestamps: true }
 );
 
-const MarketingLead = mongoose.model<IMarketingLead>("MarketingLead", marketingLeadSchema);
+const MarketingLead = mongoose.model<IMarketingLead>(
+  "MarketingLead",
+  marketingLeadSchema
+);
 export default MarketingLead;

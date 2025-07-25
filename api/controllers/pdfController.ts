@@ -22,7 +22,6 @@ export const mergePDFs = async (req: Request, res: Response): Promise<void> => {
 
     const mergedBytes = await mergedPdf.save();
 
-    // Optional: Delete temp files
     files.forEach((file) => fs.unlinkSync(file.path));
 
     res.setHeader("Content-Type", "application/pdf");

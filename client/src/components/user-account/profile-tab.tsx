@@ -13,8 +13,6 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Badge } from "../ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { useAuth } from "../../context/auth";
-
 import {
   Select,
   SelectContent,
@@ -22,140 +20,132 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { toast } from "sonner";
+import { useAuth } from "../../context/auth";
 
 export function ProfileTab() {
   const { user, setUser } = useAuth();
 
-  // Local state for profile form
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [removingAvatar, setRemovingAvatar] = useState(false); // New state for remove loading
+  const [removingAvatar, setRemovingAvatar] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [avatar, setAvatar] = useState("");
+  const [avatar, setAvatar] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
-    fullName: user?.name || "",
-    phone: user?.phone || "",
-    language: "",
-    createdAt: user?.createdAt || "",
+    fullName: "",
+    phone: "",
+    createdAt: "",
     lastLogin: user?.lastLogin || "",
     accountType: "Free",
-    role: user?.role || "",
-    street: user?.address?.street || "",
-    city: user?.address?.city || "",
-    state: user?.address?.state || "",
-    country: user?.address?.country || "",
-    postalCode: user?.address?.postalCode || "",
+    role: "",
+    street: "",
+    city: "",
+    state: "",
+    country: "",
+    postalCode: "",
   });
 
+  // Set initial values from user
   useEffect(() => {
     if (!user) return;
 
-    const fetchProfile = async () => {
-      setLoading(true);
-      try {
-        setFormData((prev) => ({
-          ...prev,
-          fullName: user.name || prev.fullName,
-          phone: user.phone || prev.phone,
-          address: user.address?.toString() || "",
-          role: user.role || "",
-          createdAt: user.createdAt || "",
-          lastLogin: user.lastLogin || "",
-          accountType: "Free",
-        }));
+    setFormData({
+      fullName: user.name || "",
+      phone: user.phone || "",
+      createdAt: user.createdAt || "",
+      lastLogin: user.lastLogin || "",
+      accountType: "Free",
+      role: user.role || "",
+      street: user.address?.street || "",
+      city: user.address?.city || "",
+      state: user.address?.state || "",
+      country: user.address?.country || "",
+      postalCode: user.address?.postalCode || "",
+    });
 
-        setAvatar(user.photo || "");
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProfile();
+    setAvatar(user.photo || null);
+    setLoading(false);
   }, [user]);
 
-  // Form input change handler
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const getInitials = (name: string | null | undefined) => {
+  const getInitials = (name?: string | null) => {
     if (!name) return "U";
-    const names = name.trim().split(" ");
-    const initials =
-      names.length >= 2 ? names[0][0] + names[1][0] : names[0][0];
-    return initials.toUpperCase();
+    const [first = "", second = ""] = name.trim().split(" ");
+    return (first[0] + (second[0] || "")).toUpperCase();
   };
 
-  // Save changes handler
-  const handleSaveChanges = async () => {
-    setSaving(true);
-
-    const form = new FormData();
-    form.append("name", formData.fullName);
-    form.append("phone", formData.phone);
-    form.append("role", formData.role);
-
-    const addressObj = {
-      street: formData.street,
-      city: formData.city,
-      state: formData.state,
-      country: formData.country,
-      postalCode: formData.postalCode,
-    };
-
-    form.append("address", JSON.stringify(addressObj));
-
-    if (avatarFile) {
-      form.append("profilePic", avatarFile);
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setAvatarFile(file);
+      setAvatar(URL.createObjectURL(file));
     }
-
-    try {
-      // Update profile API call
-      const { data } = await api.put("/account/update", form, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      if (data.user) {
-        setUser(data.user); // <-- Update user in auth context
-      }
-
-      if (data.profilePic) {
-        setAvatar(data.profilePic);
-      }
-
-      alert("Profile updated!");
-    } catch (err) {
-      console.error("Failed to update profile", err);
-      alert("Failed to update profile");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  // Avatar file input change handler
-  const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    setAvatarFile(file);
-    setAvatar(URL.createObjectURL(file));
   };
 
   const handleRemoveAvatar = async () => {
     setRemovingAvatar(true);
     try {
       await api.delete("/account/user-avatar");
-      setAvatar("");
+      setAvatar(null);
       setAvatarFile(null);
-      alert("Avatar removed.");
+      toast("Profile Picture removed", {
+        description: "Your profile picture has been removed successfully.",
+      });
     } catch (err) {
-      console.error("Failed to remove avatar", err);
-      alert("Failed to remove avatar.");
+      console.error("Remove avatar error:", err);
+      toast("Failed to remove profile picture", {
+        description: "An error occurred while removing your profile picture.",
+      });
     } finally {
       setRemovingAvatar(false);
+    }
+  };
+
+  const handleSaveChanges = async () => {
+    setSaving(true);
+    const form = new FormData();
+    form.append("name", formData.fullName);
+    form.append("phone", formData.phone);
+    form.append("role", formData.role);
+    form.append(
+      "address",
+      JSON.stringify({
+        street: formData.street,
+        city: formData.city,
+        state: formData.state,
+        country: formData.country,
+        postalCode: formData.postalCode,
+      })
+    );
+    if (avatarFile) form.append("profilePic", avatarFile);
+
+    try {
+      const { data } = await api.put("/account/update", form, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      if (data.user) {
+        const updated = {
+          ...data.user,
+          photo: data.user.profilePic || data.user.photo,
+        };
+        setUser(updated);
+        setAvatar(updated.photo || null);
+        toast("Profile Updated", {
+          description: "Your profile details have been updated successfully.",
+        });
+      }
+    } catch (err) {
+      console.error("Profile update failed:", err);
+      toast("Failed to update profile", {
+        description: "An error occurred while updating your profile.",
+      });
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -169,7 +159,7 @@ export function ProfileTab() {
 
   return (
     <div className="space-y-6">
-      {/* Avatar Section */}
+      {/* Profile Picture */}
       <Card>
         <CardHeader>
           <CardTitle>Profile Picture</CardTitle>
@@ -178,7 +168,7 @@ export function ProfileTab() {
         <CardContent className="space-y-6">
           <div className="flex items-center gap-6">
             <Avatar className="h-32 w-32">
-              <AvatarImage src={avatar} alt="Profile picture" />
+              <AvatarImage src={avatar || undefined} alt="Profile picture" />
               <AvatarFallback className="text-2xl">
                 {getInitials(formData.fullName)}
               </AvatarFallback>
@@ -195,7 +185,6 @@ export function ProfileTab() {
                     className="absolute inset-0 opacity-0 cursor-pointer"
                   />
                 </Button>
-                {/* Updated Remove Button */}
                 <Button
                   variant="outline"
                   size="sm"
@@ -203,11 +192,16 @@ export function ProfileTab() {
                   disabled={!avatar || removingAvatar}
                 >
                   {removingAvatar ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Removing...
+                    </>
                   ) : (
-                    <Trash2 className="h-4 w-4 mr-2" />
+                    <>
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Remove
+                    </>
                   )}
-                  {removingAvatar ? "Removing..." : "Remove"}
                 </Button>
               </div>
               <p className="text-sm text-muted-foreground">

@@ -11,6 +11,7 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Progress } from "../ui/progress";
 import { Shield } from "lucide-react";
+import { toast } from "sonner";
 import api from "../../lib/axios";
 
 export function SecurityTab() {
@@ -41,30 +42,31 @@ export function SecurityTab() {
 
   const handleSubmit = async () => {
     if (!passwords.current || !passwords.new || !passwords.confirm) {
-      alert("Please fill all fields");
+      toast.error("Please fill all fields");
       return;
     }
 
     if (passwordStrength < 100) {
-      alert("Password is too weak");
+      toast.warning("Password is too weak");
       return;
     }
 
     if (passwords.new !== passwords.confirm) {
-      alert("New password and confirm password do not match");
+      toast.error("New password and confirm password do not match");
       return;
     }
+
     try {
       setLoading(true);
       await api.put(`/account/update-password`, {
         currentPassword: passwords.current,
         newPassword: passwords.new,
       });
-      alert("Password updated successfully");
+      toast.success("Password updated successfully");
       setPasswords({ current: "", new: "", confirm: "" });
       setPasswordStrength(0);
     } catch (error) {
-      alert("Failed to update password");
+      toast.error("Failed to update password");
       console.error(error);
     } finally {
       setLoading(false);
@@ -73,7 +75,6 @@ export function SecurityTab() {
 
   return (
     <div className="space-y-6">
-      {/* Password Change */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -85,6 +86,7 @@ export function SecurityTab() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Current Password */}
           <div className="space-y-2">
             <Label htmlFor="currentPassword">Current Password</Label>
             <Input
@@ -94,6 +96,8 @@ export function SecurityTab() {
               onChange={(e) => handlePasswordChange("current", e.target.value)}
             />
           </div>
+
+          {/* New Password */}
           <div className="space-y-2">
             <Label htmlFor="newPassword">New Password</Label>
             <Input
@@ -106,7 +110,15 @@ export function SecurityTab() {
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Progress value={passwordStrength} className="flex-1" />
-                  <span className="text-sm text-muted-foreground">
+                  <span
+                    className={`text-sm ${
+                      passwordStrength < 50
+                        ? "text-red-500"
+                        : passwordStrength < 75
+                        ? "text-yellow-500"
+                        : "text-green-600"
+                    }`}
+                  >
                     {passwordStrength < 50
                       ? "Weak"
                       : passwordStrength < 75
@@ -117,6 +129,8 @@ export function SecurityTab() {
               </div>
             )}
           </div>
+
+          {/* Confirm Password */}
           <div className="space-y-2">
             <Label htmlFor="confirmPassword">Confirm New Password</Label>
             <Input
@@ -126,6 +140,8 @@ export function SecurityTab() {
               onChange={(e) => handlePasswordChange("confirm", e.target.value)}
             />
           </div>
+
+          {/* Password Requirements */}
           <div className="space-y-2">
             <Label>Password Requirements</Label>
             <ul className="text-sm text-muted-foreground space-y-1">
@@ -151,14 +167,25 @@ export function SecurityTab() {
               </li>
             </ul>
           </div>
-          <Button onClick={handleSubmit} disabled={loading}>
+
+          {/* Submit Button */}
+          <Button onClick={handleSubmit} className="w-full">
             {loading ? "Updating..." : "Update Password"}
           </Button>
         </CardContent>
       </Card>
+    </div>
+  );
+}
 
-      {/* Two-Factor Authentication */}
-      {/* <Card>
+// PHASE 2
+
+
+{
+  /* Two-Factor Authentication */
+}
+{
+  /* <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Smartphone className="h-5 w-5" />
@@ -202,10 +229,14 @@ export function SecurityTab() {
             </div>
           )}
         </CardContent>
-      </Card> */}
+      </Card> */
+}
 
-      {/* Active Sessions */}
-      {/* <Card>
+{
+  /* Active Sessions */
+}
+{
+  /* <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Monitor className="h-5 w-5" />
@@ -255,10 +286,14 @@ export function SecurityTab() {
             Sign Out All Other Devices
           </Button>
         </CardContent>
-      </Card> */}
+      </Card> */
+}
 
-      {/* Login Activity */}
-      {/* <Card>
+{
+  /* Login Activity */
+}
+{
+  /* <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5" />
@@ -300,7 +335,5 @@ export function SecurityTab() {
             </TableBody>
           </Table>
         </CardContent>
-      </Card> */}
-    </div>
-  );
+      </Card> */
 }
