@@ -6,8 +6,8 @@ import cookieParser from "cookie-parser";
 import authRoutes from "./routes/authRoutes";
 import marketingRoutes from "./routes/marketingRoutes";
 import accountRoutes from "./routes/accountRoutes";
-import pdfRoutes from "./routes/pdfRoutes"; 
-import conversionRoutes from "./routes/conversionRoutes"
+import pdfRoutes from "./routes/pdfRoutes";
+import conversionRoutes from "./routes/conversionRoutes";
 import { connectDB } from "./config/db";
 
 dotenv.config();
@@ -15,7 +15,7 @@ const app = express();
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://fileforge-v1.vercel.app"
+  "https://fileforge-v1.vercel.app",
 ];
 
 app.use(

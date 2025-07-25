@@ -7,6 +7,7 @@ import { DashboardHeader } from "./dashboard-header";
 import { MainWorkspace } from "./main-workspace/main";
 import { ResultsPanel } from "./results-panel";
 import { useAuth } from "../../context/auth";
+import { toast } from "sonner";
 
 export interface ProcessingJob {
   id: string;
@@ -151,6 +152,10 @@ export function UniversalConverterDashboard() {
   };
 
   const handleFileProcess = async (files: File[], operation: string) => {
+    if (!user?.credits || user?.credits < 10) {
+      toast.error("You dont have enough credits to perform this operation!");
+      return;
+    }
     const newJobs = addNewJobs(files, operation);
 
     deductCredits(newJobs.length, 10);
