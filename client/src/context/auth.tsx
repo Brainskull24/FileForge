@@ -46,6 +46,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
+    if (user) {
+      setLoading(false); 
+      return;
+    }
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         // ✅ Firebase flow
@@ -64,7 +68,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setToken(token);
         setAuthType("firebase");
       } else {
-        // ✅ Backend cookie flow
         try {
           const res = await api.get("/account/details"); // token sent via cookie
           const backendUser = res.data;

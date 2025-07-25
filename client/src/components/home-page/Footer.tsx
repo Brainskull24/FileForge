@@ -1,7 +1,13 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { FileText, Linkedin, Mail, Instagram, Youtube } from "lucide-react";
+import {
+  FileText,
+  Linkedin,
+  Mail,
+  Instagram,
+  Youtube,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import api from "../../lib/axios";
@@ -10,52 +16,57 @@ import { useAuth } from "../../context/auth";
 const Footer = () => {
   const [email, setEmail] = useState("");
   const { user } = useAuth();
+  const currentYear = useMemo(() => new Date().getFullYear(), []);
 
   const handleSubscribe = async () => {
     if (!email) return;
+
     if (!user) {
-      alert("Please log in to subscribe.");
-      toast("Not logged in", {
+      return toast("Not logged in", {
         description: "Please log in to subscribe.",
       });
-      return;
     }
+
     if (email !== user.email) {
-      alert(
-        "Email mismatch. Please use the email associated with your account."
-      );
-      toast("Email mismatch", {
+      return toast("Email mismatch", {
         description: "Please use the email associated with your account.",
       });
-      return;
     }
-    alert("Subscribing to newsletter...");
+
     try {
       const res = await api.post("/marketing/subscribe", { email });
-      alert("Subscribed successfully!");
       toast("Subscribed!", {
         description: res.data.message || "You're now subscribed.",
       });
       setEmail("");
     } catch (err: any) {
-      if (err.response) {
-        alert("Subscription failed. Please try again.");
-        toast("Error", {
-          description: err.response.data.error || "Subscription failed.",
-        });
-      } else {
-        alert("Network error. Please try again later.");
-        toast("Network Error", {
-          description: "Try again later.",
-        });
-      }
+      const description =
+        err?.response?.data?.error || "Subscription failed.";
+      toast("Newsletter Subscription failed", { description });
+      setEmail("");
     }
   };
+
+  const socialLinks = [
+    {
+      href: "https://www.linkedin.com/fileforge/",
+      icon: <Linkedin className="h-5 w-5 hover:text-blue-600" />,
+    },
+    {
+      href: "https://www.instagram.com/fileforge/",
+      icon: <Instagram className="h-5 w-5 hover:text-pink-500" />,
+    },
+    {
+      href: "https://www.youtube.com/fileforge",
+      icon: <Youtube className="h-5 w-5 hover:text-red-500" />,
+    },
+  ];
 
   return (
     <footer className="bg-gray-900 text-white py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+          {/* Branding and social */}
           <div>
             <div className="flex items-center space-x-2 mb-4">
               <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
@@ -66,30 +77,18 @@ const Footer = () => {
             <p className="text-gray-400 mb-4">
               Universal file processing platform for developers and businesses.
             </p>
-            <div className="flex space-x-4">
-              <a
-                href="https://www.linkedin.com/fileforge/"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Linkedin className="h-5 w-5 text-gray-400 hover:text-blue-600 cursor-pointer" />
-              </a>
-
-              <a
-                href="https://www.instagram.com/fileforge/"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Instagram className="h-5 w-5 text-gray-400 hover:text-pink-500 cursor-pointer" />
-              </a>
-
-              <a
-                href="https://www.youtube.com/fileforge"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Youtube className="h-5 w-5 text-gray-400 hover:text-red-500 cursor-pointer" />
-              </a>
+            <div className="flex space-x-4 text-gray-400">
+              {socialLinks.map(({ href, icon }, idx) => (
+                <a
+                  key={idx}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="transition-colors duration-200"
+                >
+                  {icon}
+                </a>
+              ))}
             </div>
           </div>
 
@@ -97,55 +96,41 @@ const Footer = () => {
           <div>
             <h3 className="font-semibold mb-4">Features</h3>
             <ul className="space-y-2 text-gray-400">
-              <li>
-                <a href="/convertor" className="hover:text-white">
-                  Base64 Tool
-                </a>
-              </li>
-              <li>
-                <a href="/convertor" className="hover:text-white">
-                  Files Conversion
-                </a>
-              </li>
-              <li>
-                <a href="/cloud" className="hover:text-white">
-                  Cloud Storage
-                </a>
-              </li>
-              <li>
-                <a href="/api-docs" className="hover:text-white">
-                  API Access
-                </a>
-              </li>
+              {[
+                { name: "Base64 Tool", path: "/convertor" },
+                { name: "Files Conversion", path: "/convertor" },
+                { name: "Cloud Storage", path: "/cloud" },
+                { name: "API Access", path: "/api-docs" },
+              ].map(({ name, path }) => (
+                <li key={name}>
+                  <a href={path} className="hover:text-white">
+                    {name}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
 
+          {/* Company */}
           <div>
             <h3 className="font-semibold mb-4">Company</h3>
             <ul className="space-y-2 text-gray-400">
-              <li>
-                <Link to="/help" className="hover:text-white">
-                  Help & Support
-                </Link>
-              </li>
-              <li>
-                <Link to="/policy" className="hover:text-white">
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link to="/terms" className="hover:text-white">
-                  Terms of Service
-                </Link>
-              </li>
-              <li>
-                <Link to="/contact" className="hover:text-white">
-                  Contact Us
-                </Link>
-              </li>
+              {[
+                { name: "Help & Support", to: "/help" },
+                { name: "Privacy Policy", to: "/policy" },
+                { name: "Terms of Service", to: "/terms" },
+                { name: "Contact Us", to: "/contact" },
+              ].map(({ name, to }) => (
+                <li key={name}>
+                  <Link to={to} className="hover:text-white">
+                    {name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
+          {/* Newsletter */}
           <div>
             <h3 className="font-semibold mb-4">Stay Updated</h3>
             <p className="text-gray-400 mb-4">
@@ -168,8 +153,7 @@ const Footer = () => {
 
         <div className="border-t border-gray-800 pt-8 text-center text-gray-400">
           <p>
-            &copy; {new Date().getFullYear()} FileForge. All rights reserved.
-            Made with ❤️
+            &copy; {currentYear} FileForge. All rights reserved. Made with ❤️
           </p>
         </div>
       </div>

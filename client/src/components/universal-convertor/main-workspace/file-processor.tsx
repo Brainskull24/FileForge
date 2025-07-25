@@ -105,14 +105,13 @@ export function FileProcessor({
       onFileProcess([file], operation);
     }
 
-    setUploadedFiles([]);
+    // setUploadedFiles([]);
   };
 
   return (
     <div className="space-y-6">
       <FileUploadArea currentTool={currentTool} onFilesSelected={handleFiles} />
 
-      {/* Show FormatSelector only if tool has formats */}
       {currentTool.formats && (
         <FormatSelector
           selectedTool={selectedTool}

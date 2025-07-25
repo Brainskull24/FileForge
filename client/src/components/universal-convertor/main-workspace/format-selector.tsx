@@ -75,12 +75,27 @@ export function FormatSelector({
               "Excel"
             )}
 
-          {currentTool.formats.supported &&
+{selectedTool === "markdown-conversion" &&
             renderFormatButtons(
-              "Select Output Format",
-              currentTool.formats.supported,
-              ""
+              "Convert From Markdown",
+              currentTool.formats.fromMarkdown,
+              "Markdown"
             )}
+
+{selectedTool === "image-conversion" &&
+            renderFormatButtons(
+              "Convert From Image",
+              currentTool.formats.fromImage,
+              "Image"
+            )}
+
+{selectedTool === "html-conversion" &&
+            renderFormatButtons(
+              "Convert From HTML",
+              currentTool.formats.fromHTML,
+              "HTML"
+            )}
+
         </div>
       </CardContent>
     </Card>

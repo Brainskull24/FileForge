@@ -17,6 +17,9 @@ interface BaseToolConfig {
     fromPdf?: FormatOption[];
     fromWord?: FormatOption[];
     fromExcel?: FormatOption[];
+    fromMarkdown?: FormatOption[];
+    fromHTML?: FormatOption[];
+    fromImage?: FormatOption[];
     supported?: string[];
   };
 }
@@ -249,7 +252,7 @@ export const toolConfigs: Record<string, BaseToolConfig> = {
   },
 
   "word-conversion": {
-    name: "Word Documents",
+    name: "Word Conversion",
     description: "Convert to/from Word document formats",
     type: "file",
     acceptFiles: true,
@@ -266,13 +269,13 @@ export const toolConfigs: Record<string, BaseToolConfig> = {
         { id: "word-to-pdf", label: "PDF" },
         { id: "word-to-text", label: "Text" },
         { id: "word-to-html", label: "HTML" },
-        { id: "word-to-makrdown", label: "Markdown" },
+        { id: "word-to-markdown", label: "Markdown" },
       ],
     },
   },
 
   "excel-conversion": {
-    name: "Excel Spreadsheets",
+    name: "Excel Conversion",
     description: "Convert to/from Excel spreadsheet formats",
     type: "file",
     acceptFiles: true,
@@ -294,38 +297,63 @@ export const toolConfigs: Record<string, BaseToolConfig> = {
     },
   },
 
+  "markdown-conversion": {
+    name: "Markdown Conversion",
+    description: "Convert from Markdown (.md) format",
+    type: "file",
+    acceptFiles: true,
+    fileTypes: ["text/markdown", ".md"],
+    formats: {
+      fromMarkdown: [
+        { id: "markdown-to-html", label: "HTML" },
+        { id: "markdown-to-plaintext", label: "PlainText" },
+        { id: "markdown-to-pdf", label: "PDF" },
+        { id: "markdown-to-word", label: "Word" },
+      ],
+    },
+  },
+
+  "html-conversion": {
+    name: "HTML Conversion",
+    description: "Convert from HTML (.html) format",
+    type: "file",
+    acceptFiles: true,
+    fileTypes: ["text/html", ".html"],
+    formats: {
+      fromHTML: [
+        { id: "html-to-markdown", label: "Markdown" },
+        { id: "html-to-pdf", label: "PDF" },
+        { id: "html-to-word", label: "Word" },
+      ],
+    },
+  },
+
   "image-conversion": {
     name: "Image Conversion",
-    description: "Convert between different image formats",
+    description: "Convert image files to other formats or grayscale",
     type: "file",
     acceptFiles: true,
     fileTypes: [
       "image/jpeg",
       "image/png",
-      "image/webp",
-      "image/gif",
       "image/bmp",
       "image/tiff",
-      "image/svg+xml",
-      "image/heic",
-      "image/x-icon",
+      "image/webp",
     ],
     formats: {
-      supported: [
-        "JPG",
-        "PNG",
-        "WebP",
-        "GIF",
-        "BMP",
-        "TIFF",
-        "SVG",
-        "HEIC",
-        "ICO",
-        "AVIF",
-        "JPEG2000",
+      fromImage: [
+        { id: "image-to-pdf", label: "PDF" },
+        { id: "image-to-grayscale", label: "Grayscale" },
+        { id: "image-to-jpg", label: "JPG" },
+        { id: "image-to-png", label: "PNG" },
+        { id: "image-to-webp", label: "WEBP" },
+        { id: "image-to-bmp", label: "BMP" },
+        { id: "image-to-tiff", label: "TIFF" },
       ],
     },
   },
+
+  // NOT IMPLEMENTED YET
   "audio-conversion": {
     name: "Audio Conversion",
     description: "Convert between different audio formats",
@@ -438,9 +466,6 @@ export const toolConfigs: Record<string, BaseToolConfig> = {
       ],
     },
   },
-
-  // NOT IMPLEMENTED YET
-
   // Additional Utility Tools
   "password-generator": {
     name: "Password Generator",

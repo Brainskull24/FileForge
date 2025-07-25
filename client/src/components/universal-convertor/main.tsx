@@ -101,11 +101,45 @@ export function UniversalConverterDashboard() {
       } else {
         // Fallback mapping based on operation
         const extMap: Record<string, string> = {
+          // PDF conversions
+          "pdf-to-html": ".html",
           "pdf-to-word": ".docx",
+          "pdf-to-text": ".txt",
+          "pdf-to-image": ".json", // returns JSON with image paths
+          "pdf-to-markdown": ".md",
+        
+          // Word conversions
           "word-to-pdf": ".pdf",
-          "html-to-pdf": ".pdf",
+          "word-to-html": ".html",
+          "word-to-text": ".txt",
+          "word-to-markdown": ".md",
+        
+          // Markdown conversions
           "markdown-to-html": ".html",
+          "markdown-to-plaintext": ".txt",
+          "markdown-to-pdf": ".pdf",
+          "markdown-to-word": ".docx",
+        
+          // HTML conversions
+          "html-to-markdown": ".md",
+          "html-to-pdf": ".pdf",
+          "html-to-word": ".docx",
+        
+          // Excel conversions
+          "excel-to-csv": ".csv",
+          "excel-to-json": ".json",
+          "excel-to-pdf": ".pdf",
+        
+          // Image conversions
+          "image-to-pdf": ".pdf",
+          "image-to-grayscale": ".png",
+          "image-to-jpg": ".jpg",
+          "image-to-png": ".png",
+          "image-to-bmp": ".bmp",
+          "image-to-tiff": ".tiff",
+          "image-to-webp": ".webp",
         };
+        
         const fallbackExt = extMap[operation] || "";
         if (!file.name.endsWith(fallbackExt)) {
           const base = file.name.replace(/\.[^.]+$/, "");

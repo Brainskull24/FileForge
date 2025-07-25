@@ -31,6 +31,7 @@ import api from "../../lib/axios";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/auth";
 import EmailVerification from "./EmailVerification";
+import { flushSync } from "react-dom";
 
 const AuthPage: React.FC = () => {
   const [mode, setMode] = useState<"login" | "signup">("login");
@@ -73,12 +74,13 @@ const AuthPage: React.FC = () => {
 
     try {
       if (mode === "login") {
-        const res = await api.post("/auth/login", { email, password });
-        const data = res.data;
-        setUser(data.user);
+        await api.post("/auth/login", { email, password });
+        const res = await api.get("/account/details");
+        flushSync(() => {
+          setUser(res.data);
+        });
         navigate("/convertor");
       } else {
-        // Signup flow with new fields
         const formData = new FormData();
         formData.append("name", name);
         formData.append("email", email);
