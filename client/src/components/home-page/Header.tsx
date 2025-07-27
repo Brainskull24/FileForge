@@ -121,16 +121,37 @@ export default function Header() {
             <a href="#pricing" className="block py-2 text-gray-600">
               Pricing
             </a>
-            <a href="#api" className="block py-2 text-gray-600">
+            <Link to="/api-docs" className="block py-2 text-gray-600">
               API Docs
-            </a>
+            </Link>
+            <Link to="/cli" className="block py-2 text-gray-600">
+              CLI
+            </Link>
             <div className="pt-2 space-y-2">
-              <Button variant="ghost" size="sm" className="w-full">
-                Login
-              </Button>
-              <Button size="sm" className="w-full">
-                Sign Up
-              </Button>
+              {user ? (
+                <>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => navigate("/account")}
+                  >
+                    Account
+                  </Button>
+                  <Button size="sm" onClick={handleLogout} className="w-full">
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button variant="ghost" size="sm" className="w-full">
+                    Login
+                  </Button>
+                  <Button size="sm" className="w-full">
+                    Sign Up
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>
