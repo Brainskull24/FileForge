@@ -16,8 +16,8 @@ dotenv.config();
 const app = express();
 
 const allowedOrigins = [
-  "http://localhost:5173",
   "https://fileforge-v1.vercel.app",
+  "http://localhost:5173"
 ];
 
 app.use(

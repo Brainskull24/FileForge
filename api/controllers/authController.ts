@@ -190,40 +190,46 @@ export const verifyEmail = async (
 ): Promise<void> => {
   const { token } = req.query;
   const user = await UserModel.findOne({ verificationToken: token });
+  const isProd = process.env.NODE_ENV === "production";
 
+  // Failed case
   if (!user) {
+    res.cookie("email_verified", "false", {
+      maxAge: 1000 * 60, // 1 min
+      httpOnly: false,
+      secure: isProd,
+      sameSite: "none",
+    });
+
     const acceptHeader = req.headers["accept"];
     if (acceptHeader && acceptHeader.includes("application/json")) {
       res.status(404).json({ error: "Invalid or expired token" });
-      return;
+    } else {
+      res.redirect(`${process.env.VITE_FE_URL}/verify-failed`);
     }
-
-    res.redirect(`${process.env.VITE_FE_URL}/verify-failed`);
     return;
   }
 
+  // Success case
   user.verified = true;
   user.verificationToken = "";
   await user.save();
 
-  const acceptHeader = req.headers["accept"];
-  if (acceptHeader && acceptHeader.includes("application/json")) {
-    res.cookie("email_verified", "false", {
-      maxAge: 1000 * 60,
-      httpOnly: false,
-    });
-    res.json({ message: "Email verified successfully", email: user.email });
-    return;
-  }
-
   res.cookie("email_verified", "true", {
-    maxAge: 1000 * 60,
+    maxAge: 1000 * 60, // 1 min
     httpOnly: false,
-    secure: true, // IMPORTANT for HTTPS
+    secure: isProd,
     sameSite: "none",
   });
-  res.redirect(`${process.env.VITE_FE_URL}/verified`);
+
+  const acceptHeader = req.headers["accept"];
+  if (acceptHeader && acceptHeader.includes("application/json")) {
+    res.json({ message: "Email verified successfully", email: user.email });
+  } else {
+    res.redirect(`${process.env.VITE_FE_URL}/verified`);
+  }
 };
+
 
 export const resendVerification = async (
   req: Request,
