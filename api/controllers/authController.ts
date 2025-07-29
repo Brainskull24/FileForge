@@ -219,6 +219,8 @@ export const verifyEmail = async (
   res.cookie("email_verified", "true", {
     maxAge: 1000 * 60,
     httpOnly: false,
+    secure: true, // IMPORTANT for HTTPS
+    sameSite: "none",
   });
   res.redirect(`${process.env.VITE_FE_URL}/verified`);
 };
