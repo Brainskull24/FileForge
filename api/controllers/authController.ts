@@ -47,7 +47,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     verificationToken: token,
   });
 
-  const verificationLink = `http://localhost:4000/api/v1/auth/verify-email?token=${token}`;
+  const verificationLink = `${process.env.BACKEND_URL}/api/v1/auth/verify-email?token=${token}`;
   const html = getVerificationEmailHtml(name || "User", verificationLink);
 
   await sendEmail(email, "Verify Email Address", html);
@@ -198,7 +198,7 @@ export const verifyEmail = async (
       return;
     }
 
-    res.redirect("http://localhost:5173/verify-failed");
+    res.redirect(`${process.env.VITE_FE_URL}/verify-failed`);
     return;
   }
 
@@ -220,7 +220,7 @@ export const verifyEmail = async (
     maxAge: 1000 * 60,
     httpOnly: false,
   });
-  res.redirect("http://localhost:5173/verified");
+  res.redirect(`${process.env.VITE_FE_URL}/verified`);
 };
 
 export const resendVerification = async (
@@ -243,7 +243,7 @@ export const resendVerification = async (
   user.verificationToken = token;
   await user.save();
 
-  const verificationLink = `http://localhost:4000/api/v1/auth/verify-email?token=${token}`;
+  const verificationLink = `${process.env.BACKEND_URL}/api/v1/auth/verify-email?token=${token}`;
   const html = getVerificationEmailHtml(user.name || "User", verificationLink);
 
   await sendEmail(email, "Verify Email Address", html);
@@ -271,7 +271,7 @@ export const forgotPassword = async (
   user.resetToken = token;
   await user.save();
 
-  const resetLink = `http://localhost:5173/reset-password?token=${token}`;
+  const resetLink = `/reset-password?token=${token}`;
   const html = getResetPasswordEmailHtml(resetLink);
 
   await sendEmail(email, "Reset Your Password", html);
