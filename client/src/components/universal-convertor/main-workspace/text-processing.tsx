@@ -17,7 +17,6 @@ export class TextProcessingLogic {
     inputText: string
   ): Promise<ProcessingResult> {
     switch (selectedTool) {
-      // Base64 operations
       case "base64-encode":
         return { type: "text", content: Base64Utils.encode(inputText) };
 

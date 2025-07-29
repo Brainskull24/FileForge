@@ -2,11 +2,11 @@
 import { Button } from "../../ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
 import { Textarea } from "../../ui/textarea";
-import { Play } from "lucide-react";
 import { TextProcessingLogic } from "./text-processing";
 import { OutputDisplay } from "./output-display";
 import { useAuth } from "../../../context/auth";
 import { toast } from "sonner";
+import { Play } from "lucide-react";
 
 interface TextProcessorProps {
   selectedTool: string;
@@ -46,7 +46,6 @@ export function TextProcessor({
   const handleTextProcess = async () => {
     if (!inputText.trim() || !selectedTool) return;
 
-    // Reset outputs
     setOutputText("");
     setOutputBlob(null);
     setDownloadFilename(null);
@@ -61,7 +60,7 @@ export function TextProcessor({
       selectedTool,
       inputText
     );
-    deductCredits(1, 5);
+
     if (result.type === "text") {
       setOutputText(result.content!);
     } else if (result.type === "file") {
@@ -74,7 +73,7 @@ export function TextProcessor({
         lastModified: Date.now(),
       });
     }
-
+    deductCredits(1, 5);
     setShowOutput(true);
   };
 

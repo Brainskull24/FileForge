@@ -4,8 +4,6 @@ import Homepage from "./components/home-page/main";
 import PricingPage from "./components/pricing-section/main";
 import { UniversalConverterDashboard } from "./components/universal-convertor/main";
 import AccountSettings from "./components/user-account/main";
-import BillingCredits from "./components/usage-analytics/main";
-import HelpCenter from "./components/help-and-support/main";
 import SecurityPrivacyPage from "./components/privacy-policy/main";
 import TermsOfService from "./components/terms-of-service/main";
 import ContactSupportPage from "./components/contact-page/main";
@@ -26,7 +24,6 @@ function App() {
     <>
       <Toaster richColors position="top-right" />
       <Routes>
-        {/* Auth Routes */}
         <Route path="/" element={<Homepage />} />
         <Route path="/verify-failed" element={<VerificationFailed />} />
         <Route path="/verified" element={<VerificationSuccess />} />
@@ -41,19 +38,6 @@ function App() {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-        {/* Public Routes */}
-        <Route path="/pricing" element={<PricingPage />} />
-        <Route path="/terms" element={<TermsOfService />} />
-        <Route path="/policy" element={<SecurityPrivacyPage />} />
-        {/* <Route path="/maintainence" element={<Maintenance />} /> */}
-        <Route path="/api-docs" element={<APIDocsComingSoon />} />
-        <Route path="/contact" element={<ContactSupportPage />} />
-        <Route path="/help" element={<HelpCenter />} />
-        <Route path="/cli" element={<CLIDocsPage />} />
-        <Route path="/404" element={<NotFound />} />
-        <Route path="*" element={<Navigate to="/404" replace />} />
-
-        {/* Protected Routes */}
         <Route
           path="/convertor"
           element={
@@ -71,22 +55,6 @@ function App() {
           }
         />
         <Route
-          path="/analytics"
-          element={
-            <ProtectedRoute>
-              <BillingCredits />
-            </ProtectedRoute>
-          }
-        />
-        {/* <Route
-          path="/admin"
-          element={
-            <ProtectedRoute>
-              <AdminDashboard />
-            </ProtectedRoute>
-          }
-        /> */}
-        <Route
           path="/cloud"
           element={
             <ProtectedRoute>
@@ -94,6 +62,15 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/terms" element={<TermsOfService />} />
+        <Route path="/policy" element={<SecurityPrivacyPage />} />
+        <Route path="/api-docs" element={<APIDocsComingSoon />} />
+        <Route path="/contact" element={<ContactSupportPage />} />
+        <Route path="/cli" element={<CLIDocsPage />} />
+        <Route path="/404" element={<NotFound />} />
+        <Route path="*" element={<Navigate to="/404" replace />} />
       </Routes>
     </>
   );

@@ -1,5 +1,4 @@
 import { Label } from "../ui/label";
-import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -11,36 +10,17 @@ import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { Progress } from "../ui/progress";
 import { Plus, Star, DollarSign, TrendingUp } from "lucide-react";
-import api from "../../lib/axios";
 import { useAuth } from "../../context/auth";
 import { toast } from "sonner";
 
 export function BillingTab() {
-  // const [paymentMethods] = useState(paymentMethodsData);
-  // const [invoices] = useState(invoiceData);
-  const [balance, setBalance] = useState(0);
-  const [limit, setLimit] = useState(2000);
-  // const [loading, setLoading] = useState(false);
   const { user } = useAuth();
-  useEffect(() => {
-    const fetchCredits = async () => {
-      try {
-        const res = await api.get("/user/credits");
-        setBalance(res.data.balance);
-        setLimit(res.data.limit);
-      } catch (err) {
-        // toast.error("Failed to load credit data");
-        console.error(err);
-      }
-    };
-    fetchCredits();
-  }, []);
 
   const totalCredits = 500;
   const usedCredits = totalCredits - (user?.credits ?? 0);
 
-  const used = limit - balance;
-  const percentUsed = Math.round((used / limit) * 100);
+  const used = 500 - (user?.credits ?? 0);
+  const percentUsed = Math.round((used / 500) * 100);
   return (
     <div className="space-y-6">
       {/* Current Subscription */}
@@ -79,109 +59,6 @@ export function BillingTab() {
           </Button>
         </CardContent>
       </Card>
-
-      {/* Payment Methods */}
-      {/* <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CreditCard className="h-5 w-5" />
-            Payment Methods
-          </CardTitle>
-          <CardDescription>Manage your payment methods</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-3">
-            {paymentMethods.map((method) => (
-              <div
-                key={method.id}
-                className="flex items-center justify-between p-3 border rounded-lg"
-              >
-                <div className="flex items-center gap-3">
-                  <CreditCard className="h-5 w-5" />
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">
-                        {method.type} •••• {method.last4}
-                      </span>
-                      {method.isDefault && (
-                        <Badge variant="secondary" className="text-xs">
-                          Default
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      Expires {method.expiry}
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  {!method.isDefault && (
-                    <Button variant="outline" size="sm">
-                      Set Default
-                    </Button>
-                  )}
-                  <Button variant="outline" size="sm">
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-          <Button variant="outline" className="w-full bg-transparent">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Payment Method
-          </Button>
-        </CardContent>
-      </Card> */}
-
-      {/* Billing History */}
-      {/* <Card>
-        <CardHeader>
-          <CardTitle>Billing History</CardTitle>
-          <CardDescription>Your past invoices and payments</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Date</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {invoices.map((invoice) => (
-                <TableRow key={invoice.id}>
-                  <TableCell>{invoice.date}</TableCell>
-                  <TableCell>{invoice.amount}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        invoice.status === "Paid"
-                          ? "secondary"
-                          : invoice.status === "Refunded"
-                          ? "destructive"
-                          : "default"
-                      }
-                    >
-                      {invoice.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Button variant="outline" size="sm">
-                      <Download className="h-4 w-4 mr-2" />
-                      Download
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card> */}
-
-      {/* Credit Management */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -208,7 +85,10 @@ export function BillingTab() {
               <Plus className="h-4 w-4 mr-2" />
               Purchase Credits
             </Button>
-            <Button variant="outline" onClick={() => toast.info("Feature Coming soon!")}>
+            <Button
+              variant="outline"
+              onClick={() => toast.info("Feature Coming soon!")}
+            >
               <TrendingUp className="h-4 w-4 mr-2" />
               Usage Analytics
             </Button>

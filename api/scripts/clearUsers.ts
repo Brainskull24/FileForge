@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import { UserModel } from "../models/userModel";
+import logger from "../utils/logger";
 
 const clearUsers = async () => {
   try {
@@ -10,12 +11,12 @@ const clearUsers = async () => {
     await mongoose.connect(uri);
 
     const result = await UserModel.deleteMany({});
-    console.log(`✅ Cleared ${result.deletedCount} users`);
+    logger.info(`✅ Cleared ${result.deletedCount} users`);
 
     await mongoose.disconnect();
     process.exit(0);
   } catch (err) {
-    console.error("❌ Error clearing users:", err);
+    logger.error("❌ Error clearing users:", err);
     process.exit(1);
   }
 };

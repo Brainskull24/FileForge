@@ -1,32 +1,30 @@
 import { useState } from "react";
 import { Button } from "../ui/button";
-import { Menu, X, FileText } from "lucide-react";
+import { Menu, X, FileText, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/auth";
-import { signOut } from "firebase/auth";
-import { auth } from "../../lib/firebase";
-import api from "../../lib/axios";
+import { toast } from "sonner";
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
-  const { authType, logout, user } = useAuth();
+  const { logout, user, loading } = useAuth();
 
   const handleLogout = async () => {
     try {
-      if (authType === "firebase") {
-        await signOut(auth);
-      } else if (authType === "custom") {
-        await api.post("/auth/logout");
-      }
       logout();
       navigate("/");
     } catch (error) {
-      console.error("Logout failed:", error);
-      alert("Failed to logout. Try again.");
+      toast.error("Failed to logout. Try again.");
     }
   };
-
+  if (loading)
+    return (
+      <div className="fixed inset-0 flex flex-col items-center justify-center bg-background z-50">
+        <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
+        <p className="text-sm text-muted-foreground">Loading...</p>
+      </div>
+    );
   return (
     <header className="fixed top-0 w-full bg-white/95 backdrop-blur-sm border-b border-gray-200 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

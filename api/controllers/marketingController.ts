@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import MarketingLead from "../models/marketingLead";
 import { UserModel } from "../models/userModel";
 import { AuthRequest } from "../middlewares/authenticate";
+import logger from "../utils/logger";
 
 export const subscribeMarketing = async (
   req: AuthRequest,
@@ -29,7 +30,7 @@ export const subscribeMarketing = async (
     await entry.save();
     res.json({ message: "User subscribed to marketing" });
   } catch (error) {
-    console.error("Marketing subscribe error:", error);
+    logger.error("Marketing subscribe error:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };

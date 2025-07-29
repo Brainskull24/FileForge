@@ -8,23 +8,6 @@ interface Address {
   postalCode?: string;
 }
 
-export interface IUser extends Document {
-  name: string;
-  email: string;
-  password?: string;
-  phone?: string;
-  address?: Address;
-  profilePic?: string;
-  verified: boolean;
-  verificationToken?: string;
-  role?: string;
-  resetToken?: string;
-  credits?: number;
-  lastLogin?: Date;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
-
 const addressSchema = new Schema<Address>(
   {
     street: { type: String },
@@ -36,22 +19,64 @@ const addressSchema = new Schema<Address>(
   { _id: false }
 );
 
+export interface IUser extends Document {
+  name: string;
+  email: string;
+  password?: string;
+  phone?: string;
+  address?: Address;
+  profilePic?: string;
+  verified: boolean;
+  verificationToken?: string;
+  resetToken?: string;
+  credits?: number;
+  role?: string;
+  provider?: string;
+  providerId?: string;
+  lastLogin?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
+  createdVia?: string;
+}
+
 const userSchema = new Schema<IUser>(
   {
     name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    password: { type: String },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    password: {
+      type: String,
+      required: function () {
+        return this.createdVia === "custom";
+      },
+    },
     phone: { type: String },
     address: { type: addressSchema, required: false },
     profilePic: { type: String },
     verified: { type: Boolean, default: false },
-    role: { type: String },
     verificationToken: { type: String },
     resetToken: { type: String },
     credits: { type: Number, default: 500 },
+    role: { type: String },
+    provider: {
+      type: String,
+      enum: ["Google", "GitHub", null],
+    },
+    providerId: { type: String },
+    createdVia: {
+      type: String,
+      required: true,
+      enum: ["custom", "social"],
+      default: "custom",
+    },
     lastLogin: { type: Date },
   },
   { timestamps: true }
 );
 
+userSchema.index({ email: 1 });
+userSchema.index({ provider: 1, providerId: 1 });
 export const UserModel = mongoose.model<IUser>("User", userSchema);

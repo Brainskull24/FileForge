@@ -8,6 +8,8 @@ import marketingRoutes from "./routes/marketingRoutes";
 import accountRoutes from "./routes/accountRoutes";
 import pdfRoutes from "./routes/pdfRoutes";
 import conversionRoutes from "./routes/conversionRoutes";
+import supportRoutes from "./routes/supportRoutes";
+import logger from "./utils/logger";
 import { connectDB } from "./config/db";
 
 dotenv.config();
@@ -37,10 +39,11 @@ app.use("/api/v1/marketing", marketingRoutes);
 app.use("/api/v1/account", accountRoutes);
 app.use("/api/v1/pdf", pdfRoutes);
 app.use("/api/v1/file-conversion", conversionRoutes);
+app.use("/api/v1/support", supportRoutes);
 
 const PORT = process.env.PORT || 4000;
 connectDB().then(() => {
   app.listen(PORT, () => {
-    console.log(`🚀 Server running at http://localhost:${PORT}`);
+    logger.info(`🚀 Server running at http://localhost:${PORT}`);
   });
 });

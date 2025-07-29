@@ -19,9 +19,10 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
-import api from "../../lib/axios";
 import { useAuth } from "../../context/auth";
 import { auth } from "../../lib/firebase";
+import api from "../../lib/axios";
+import { toast } from "sonner";
 
 export function DashboardHeader() {
   const { authType, logout, user } = useAuth();
@@ -38,10 +39,10 @@ export function DashboardHeader() {
         await api.post("/auth/logout");
       }
       logout();
+      toast.success("Logged out successfully!")
       navigate("/");
     } catch (error) {
-      console.error("Logout failed:", error);
-      alert("Failed to logout. Try again.");
+      toast.error("Failed to logout. Try again.");
     }
   };
 

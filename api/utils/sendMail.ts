@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import logger from "./logger";
 
 export const sendEmail = async (to: string, subject: string, html: string) => {
   const transporter = nodemailer.createTransport({
@@ -13,9 +14,9 @@ export const sendEmail = async (to: string, subject: string, html: string) => {
 
   transporter.verify((error, success) => {
     if (error) {
-      console.error("❌ SMTP error:", error);
+      logger.error("❌ SMTP error:", error);
     } else {
-      console.log("✅ Gmail SMTP server is ready to send emails");
+      logger.info("✅ Gmail SMTP server is ready to send emails");
     }
   });
 

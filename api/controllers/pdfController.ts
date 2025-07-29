@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import fs from "fs";
 import { PDFDocument } from "pdf-lib";
+import logger from "../utils/logger";
 
 export const mergePDFs = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -28,7 +29,7 @@ export const mergePDFs = async (req: Request, res: Response): Promise<void> => {
     res.setHeader("Content-Disposition", "attachment; filename=merged.pdf");
     res.send(Buffer.from(mergedBytes));
   } catch (err) {
-    console.error("Merge error:", err);
+    logger.error("Merge error:", err);
     res.status(500).json({ error: "Failed to merge PDFs" });
   }
 };

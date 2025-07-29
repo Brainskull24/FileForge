@@ -14,6 +14,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import api from "../../lib/axios";
 import Cookies from "js-cookie";
+import { toast } from "sonner";
 
 const VerificationFailed: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -33,7 +34,7 @@ const VerificationFailed: React.FC = () => {
 
     try {
       await api.post("/auth/resend-verification", { email });
-      alert("Verification email sent successfully! Please check your inbox.");
+      toast.success("Verification email sent successfully! Please check your inbox.");
       setShowResendForm(false);
       setEmail("");
     } catch (error: any) {
@@ -41,7 +42,7 @@ const VerificationFailed: React.FC = () => {
         error?.response?.data?.message ||
         error?.response?.data?.error ||
         "Failed to resend email";
-      alert(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }

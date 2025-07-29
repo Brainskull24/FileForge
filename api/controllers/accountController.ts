@@ -2,6 +2,7 @@ import { Response } from "express";
 import bcrypt from "bcryptjs";
 import { UserModel } from "../models/userModel";
 import { AuthRequest } from "../middlewares/authenticate";
+import logger from "../utils/logger";
 
 export const getAccountDetails = async (
   req: AuthRequest,
@@ -135,7 +136,7 @@ export const deleteUserAvatar = async (
 
     res.status(200).json({ message: "Avatar removed successfully." });
   } catch (error) {
-    console.error("Error removing avatar:", error);
+    logger.error("Error removing avatar:", error);
     res.status(500).json({ message: "Server error" });
   }
 };

@@ -1,6 +1,4 @@
 import { useState } from "react";
-import api from "../../lib/axios";
-
 import { SidebarProvider } from "../ui/sidebar";
 import { AppSidebar } from "./app-sidebar";
 import { DashboardHeader } from "./dashboard-header";
@@ -8,6 +6,8 @@ import { MainWorkspace } from "./main-workspace/main";
 import { ResultsPanel } from "./results-panel";
 import { useAuth } from "../../context/auth";
 import { toast } from "sonner";
+import { extMap } from "../../data/toolConfigs";
+import api from "../../lib/axios";
 
 export interface ProcessingJob {
   id: string;
@@ -21,40 +21,45 @@ export interface ProcessingJob {
   createdAt: Date;
 }
 
-export interface UserCredits {
-  current: number;
-  used: number;
-}
-
 export function UniversalConverterDashboard() {
   const [selectedTool, setSelectedTool] = useState<string | null>(null);
   const [processingJobs, setProcessingJobs] = useState<ProcessingJob[]>([]);
   const { user, deductCredits } = useAuth();
-  const [userCredits] = useState<UserCredits>({
-    current: user?.credits || 0,
-    used: 500 - (user?.credits || 0),
-  });
 
-  const addNewJobs = (files: File[], operation: string): ProcessingJob[] => {
-    const newJobs = files.map((file) => ({
-      id: Math.random().toString(36).slice(2),
+  const addNewJob = (file: File, operation: string): ProcessingJob => {
+    const job: ProcessingJob = {
+      id: crypto.randomUUID(),
       fileName: file.name,
       fileSize: file.size,
       fileType: file.type,
       operation,
-      status: "queued" as const,
+      status: "queued",
       progress: 0,
       createdAt: new Date(),
-    }));
-
-    setProcessingJobs((prev) => [...newJobs, ...prev]);
-    return newJobs;
+    };
+    setProcessingJobs((prev) => [job, ...prev]);
+    return job;
   };
 
   const updateJob = (jobId: string, updates: Partial<ProcessingJob>) => {
     setProcessingJobs((prev) =>
-      prev.map((j) => (j.id === jobId ? { ...j, ...updates } : j))
+      prev.map((job) => (job.id === jobId ? { ...job, ...updates } : job))
     );
+  };
+
+  const resolveDownloadName = (
+    file: File,
+    disposition: string | undefined,
+    operation: string
+  ): string => {
+    if (disposition?.includes("filename=")) {
+      const match = disposition.match(/filename="?([^"]+)"?/);
+      if (match?.[1]) return match[1];
+    }
+
+    const ext = extMap[operation] || "";
+    const baseName = file.name.replace(/\.[^.]+$/, "");
+    return `${baseName}${ext}`;
   };
 
   const uploadFile = async (
@@ -79,65 +84,16 @@ export function UniversalConverterDashboard() {
         }
       );
 
-      // --- Determine File Type & Name ---
-      const mimeType = headers["content-type"] || "application/octet-stream";
-      const blob = new Blob([data], { type: mimeType });
+      const blob = new Blob([data], {
+        type: headers["content-type"] || "application/octet-stream",
+      });
+
       const downloadUrl = URL.createObjectURL(blob);
-
-      // Extract filename from Content-Disposition header if available
-      let downloadName = `converted-${file.name}`;
-      const disposition = headers["content-disposition"];
-      if (disposition && disposition.includes("filename=")) {
-        const match = disposition.match(/filename="?([^"]+)"?/);
-        if (match?.[1]) downloadName = match[1];
-      } else {
-        // Fallback mapping based on operation
-        const extMap: Record<string, string> = {
-          // PDF conversions
-          "pdf-to-html": ".html",
-          "pdf-to-word": ".docx",
-          "pdf-to-text": ".txt",
-          "pdf-to-image": ".json", // returns JSON with image paths
-          "pdf-to-markdown": ".md",
-
-          // Word conversions
-          "word-to-pdf": ".pdf",
-          "word-to-html": ".html",
-          "word-to-text": ".txt",
-          "word-to-markdown": ".md",
-
-          // Markdown conversions
-          "markdown-to-html": ".html",
-          "markdown-to-plaintext": ".txt",
-          "markdown-to-pdf": ".pdf",
-          "markdown-to-word": ".docx",
-
-          // HTML conversions
-          "html-to-markdown": ".md",
-          "html-to-pdf": ".pdf",
-          "html-to-word": ".docx",
-
-          // Excel conversions
-          "excel-to-csv": ".csv",
-          "excel-to-json": ".json",
-          "excel-to-pdf": ".pdf",
-
-          // Image conversions
-          "image-to-pdf": ".pdf",
-          "image-to-grayscale": ".png",
-          "image-to-jpg": ".jpg",
-          "image-to-png": ".png",
-          "image-to-bmp": ".bmp",
-          "image-to-tiff": ".tiff",
-          "image-to-webp": ".webp",
-        };
-
-        const fallbackExt = extMap[operation] || "";
-        if (!file.name.endsWith(fallbackExt)) {
-          const base = file.name.replace(/\.[^.]+$/, "");
-          downloadName = `${base}${fallbackExt}`;
-        }
-      }
+      const downloadName = resolveDownloadName(
+        file,
+        headers["content-disposition"],
+        operation
+      );
 
       updateJob(job.id, {
         status: "completed",
@@ -145,24 +101,22 @@ export function UniversalConverterDashboard() {
         downloadUrl,
         fileName: downloadName,
       });
+      deductCredits(1, 10);
     } catch (error) {
-      console.error(`Failed to process ${job.fileName}`, error);
+      toast.error(`Failed to process ${job.fileName}` + error);
       updateJob(job.id, { status: "failed" });
     }
   };
 
   const handleFileProcess = async (files: File[], operation: string) => {
-    if (!user?.credits || user?.credits < 10) {
-      toast.error("You dont have enough credits to perform this operation!");
+    if (!user?.credits || user.credits < 10) {
+      toast.error("You don't have enough credits to perform this operation!");
       return;
     }
-    const newJobs = addNewJobs(files, operation);
 
-    deductCredits(newJobs.length, 10);
-
-    for (const job of newJobs) {
-      const file = files.find((f) => f.name === job.fileName);
-      if (file) await uploadFile(job, file, operation);
+    for (const file of files) {
+      const job = addNewJob(file, operation);
+      await uploadFile(job, file, operation);
     }
   };
 
@@ -179,7 +133,6 @@ export function UniversalConverterDashboard() {
             <MainWorkspace
               selectedTool={selectedTool}
               onFileProcess={handleFileProcess}
-              userCredits={userCredits}
             />
             <ResultsPanel processingJobs={processingJobs} />
           </div>

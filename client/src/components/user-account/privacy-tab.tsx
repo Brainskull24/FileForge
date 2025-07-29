@@ -27,8 +27,6 @@ export function PrivacyTab() {
     cookiePreferences: "essential",
   });
 
-  // const [deleteConfirmation, setDeleteConfirmation] = useState("");
-
   const handleSettingChange = (key: string, value: any) => {
     setPrivacySettings((prev) => ({ ...prev, [key]: value }));
   };
@@ -94,23 +92,9 @@ export function PrivacyTab() {
               </p>
             </div>
           </div>
-
-          {/* <Separator />
-
-          <div className="space-y-4">
-            <Button variant="outline" className="w-full bg-transparent">
-              <Download className="h-4 w-4 mr-2" />
-              Download All Account Data
-            </Button>
-            <p className="text-sm text-muted-foreground">
-              Export all your data including account information, processing
-              history, and settings
-            </p>
-          </div> */}
         </CardContent>
       </Card>
 
-      {/* Privacy Controls */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -154,119 +138,6 @@ export function PrivacyTab() {
           </div>
         </CardContent>
       </Card>
-
-      {/* Account Deletion */}
-      {/* <Card className="border-destructive">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-destructive">
-            <Trash2 className="h-5 w-5" />
-            Account Deletion
-          </CardTitle>
-          <CardDescription>
-            Permanently delete your account and all associated data
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Alert>
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>
-              <strong>Warning:</strong> Account deletion is permanent and cannot
-              be undone. All your data, files, and settings will be permanently
-              removed.
-            </AlertDescription>
-          </Alert>
-
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>What happens when you delete your account:</Label>
-              <ul className="text-sm text-muted-foreground space-y-1 ml-4">
-                <li>• All uploaded files will be permanently deleted</li>
-                <li>• Processing history will be removed</li>
-                <li>• API keys will be revoked</li>
-                <li>
-                  • Billing information will be archived for legal compliance
-                </li>
-                <li>• Account cannot be recovered after deletion</li>
-              </ul>
-            </div>
-
-            <Separator />
-
-            <div className="space-y-2">
-              <Label>Alternative options:</Label>
-              <div className="space-y-2">
-                <Button
-                  variant="outline"
-                  className="w-full justify-start bg-transparent"
-                >
-                  Suspend Account Temporarily
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start bg-transparent"
-                >
-                  Downgrade to Free Plan
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start bg-transparent"
-                >
-                  Export Data Only
-                </Button>
-              </div>
-            </div>
-
-            <Separator />
-
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="destructive" className="w-full">
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete Account
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle className="text-destructive">
-                    Delete Account
-                  </DialogTitle>
-                  <DialogDescription>
-                    This action cannot be undone. This will permanently delete
-                    your account and remove all your data from our servers.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <Alert>
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertDescription>
-                      Please type <strong>DELETE</strong> to confirm account
-                      deletion.
-                    </AlertDescription>
-                  </Alert>
-                  <div className="space-y-2">
-                    <Label htmlFor="deleteConfirmation">Confirmation</Label>
-                    <Input
-                      id="deleteConfirmation"
-                      placeholder="Type DELETE to confirm"
-                      value={deleteConfirmation}
-                      onChange={(e) => setDeleteConfirmation(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button variant="outline">Cancel</Button>
-                  <Button
-                    variant="destructive"
-                    disabled={deleteConfirmation !== "DELETE"}
-                  >
-                    Delete Account
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </div>
-        </CardContent>
-      </Card> */}
     </div>
   );
 }

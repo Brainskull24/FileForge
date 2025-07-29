@@ -17,7 +17,7 @@ export const supportChannels: SupportChannel[] = [
   {
     icon: MessageCircle,
     title: "Live Chat Support",
-    availability: "Monday-Friday, 9 AM - 6 PM EST",
+    availability: "Monday-Friday, 9 AM - 6 PM IST",
     responseTime: "Immediate during business hours",
     bestFor: "Quick questions, technical issues, account help",
     languages: "English, Spanish (more coming soon)",
@@ -82,27 +82,3 @@ export const teamMembers = [
     bio: "Developer advocate focused on API documentation and community engagement.",
   },
 ];
-
-export const planFeatures = {
-  free: [
-    "Community forum",
-    "Email support (48-hour response)",
-    "Self-service resources",
-    "Basic troubleshooting tools",
-  ],
-  pro: [
-    "All Free features",
-    "Priority email support (4-hour response)",
-    "Live chat during business hours",
-    "Phone support for urgent issues",
-    "Advanced troubleshooting tools",
-  ],
-  enterprise: [
-    "All Pro features",
-    "Dedicated account manager",
-    "1-hour response time SLA",
-    "24/7 phone support",
-    "Custom training and onboarding",
-    "Direct engineering escalation",
-  ],
-};

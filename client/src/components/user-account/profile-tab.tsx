@@ -46,7 +46,6 @@ export function ProfileTab() {
     postalCode: "",
   });
 
-  // Set initial values from user
   useEffect(() => {
     if (!user) return;
 
@@ -64,7 +63,7 @@ export function ProfileTab() {
       postalCode: user.address?.postalCode || "",
     });
 
-    setAvatar(user.photo || null);
+    setAvatar(user.profilePic || null);
     setLoading(false);
   }, [user]);
 
@@ -92,12 +91,11 @@ export function ProfileTab() {
       await api.delete("/account/user-avatar");
       setAvatar(null);
       setAvatarFile(null);
-      toast("Profile Picture removed", {
+      toast.success("Profile Picture removed", {
         description: "Your profile picture has been removed successfully.",
       });
     } catch (err) {
-      console.error("Remove avatar error:", err);
-      toast("Failed to remove profile picture", {
+      toast.error("Failed to remove profile picture", {
         description: "An error occurred while removing your profile picture.",
       });
     } finally {
@@ -131,17 +129,16 @@ export function ProfileTab() {
       if (data.user) {
         const updated = {
           ...data.user,
-          photo: data.user.profilePic || data.user.photo,
+          profilePic: data.user.profilePic,
         };
         setUser(updated);
-        setAvatar(updated.photo || null);
-        toast("Profile Updated", {
+        setAvatar(updated.profilePic || null);
+        toast.success("Profile Updated", {
           description: "Your profile details have been updated successfully.",
         });
       }
     } catch (err) {
-      console.error("Profile update failed:", err);
-      toast("Failed to update profile", {
+      toast.error("Failed to update profile", {
         description: "An error occurred while updating your profile.",
       });
     } finally {

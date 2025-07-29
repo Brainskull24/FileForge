@@ -23,8 +23,8 @@ import {
   FileText,
   Zap,
   Settings,
-  HelpCircle,
   ChevronDown,
+  ArrowLeft,
 } from "lucide-react";
 import {
   decodingTools,
@@ -162,10 +162,10 @@ export function AppSidebar({ selectedTool, onToolSelect }: AppSidebarProps) {
             variant="ghost"
             size="sm"
             className="w-full justify-start"
-            onClick={() => navigate("/help")}
+            onClick={() => navigate("/")}
           >
-            <HelpCircle className="mr-2 h-4 w-4" />
-            Help & Support
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Home
           </Button>
         </div>
       </SidebarFooter>

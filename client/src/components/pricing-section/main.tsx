@@ -1,13 +1,5 @@
 import { useState } from "react";
-import {
-  Check,
-  X,
-  Shield,
-  Clock,
-  CreditCard,
-  Star,
-  ChevronDown,
-} from "lucide-react";
+import { Check, X, Shield, Clock, CreditCard, ChevronDown } from "lucide-react";
 import { Button } from "../ui/button";
 import {
   Card,
@@ -200,14 +192,6 @@ export default function PricingPage() {
           ))}
         </div>
 
-        {/* Promo Code */}
-        {/* <div className="flex justify-center mb-16">
-          <div className="flex gap-2 max-w-md w-full">
-            <Input placeholder="Enter promo code" />
-            <Button variant="outline">Apply</Button>
-          </div>
-        </div> */}
-
         {/* Credit System Explanation */}
         <div className="mb-16">
           <div className="text-center mb-8">
@@ -338,12 +322,12 @@ export default function PricingPage() {
         )}
 
         {/* Trust Indicators */}
-        <div className="grid md:grid-cols-4 gap-6 mb-16">
+        <div className="grid md:grid-cols-3 gap-6 mb-16">
           <div className="text-center">
             <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
               <Shield className="h-8 w-8 text-green-600" />
             </div>
-            <h3 className="font-semibold mb-1">30-day guarantee</h3>
+            <h3 className="font-semibold mb-1">7-day guarantee</h3>
             <p className="text-sm text-muted-foreground">
               Money-back guarantee
             </p>
@@ -363,13 +347,6 @@ export default function PricingPage() {
             <p className="text-sm text-muted-foreground">
               No long-term contracts
             </p>
-          </div>
-          <div className="text-center">
-            <div className="bg-orange-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
-              <Star className="h-8 w-8 text-orange-600" />
-            </div>
-            <h3 className="font-semibold mb-1">SOC 2 & GDPR</h3>
-            <p className="text-sm text-muted-foreground">Enterprise security</p>
           </div>
         </div>
 

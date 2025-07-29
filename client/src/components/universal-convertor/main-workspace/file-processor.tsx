@@ -98,14 +98,11 @@ export function FileProcessor({
           setShowEncodingOutput(true);
         });
     } else {
-      // Backend conversion logic
       const operation =
         selectedFormat || currentTool?.formats?.supported?.[0]?.id || "process";
 
       onFileProcess([file], operation);
     }
-
-    // setUploadedFiles([]);
   };
 
   return (

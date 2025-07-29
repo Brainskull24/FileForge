@@ -2,6 +2,7 @@ import { Router } from "express";
 import axios from "axios";
 import multer from "multer";
 import FormData from "form-data";
+import logger from "../utils/logger";
 
 const PYTHON_SERVER_URL = "http://localhost:8000/api/v1/file-conversion";
 
@@ -29,8 +30,6 @@ router.post("/:operation", upload.single("file"), async (req, res) => {
     const pythonUrl = `${PYTHON_SERVER_URL}/${resource}?conversion=${encodeURIComponent(
       operation
     )}`;
-
-    console.log(pythonUrl)
 
     // Send file to Python backend
     const pythonResponse = await axios.post(pythonUrl, formData, {
@@ -61,7 +60,7 @@ router.post("/:operation", upload.single("file"), async (req, res) => {
     // Pipe the file stream directly to the frontend response
     pythonResponse.data.pipe(res);
   } catch (error: any) {
-    console.error("Error calling Python server:", error.message);
+    logger.error("Error calling Python server:", error.message);
     res.status(500).json({
       message: "Conversion failed",
       error: error.message,

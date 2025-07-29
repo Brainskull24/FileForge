@@ -8,6 +8,7 @@ import {
   getVerificationEmailHtml,
   getResetPasswordEmailHtml,
 } from "../utils/emailTemplates";
+import logger from "../utils/logger";
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   const { name, email, password, phone, address } = req.body;
@@ -46,7 +47,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     verificationToken: token,
   });
 
-  const verificationLink = `https://fileforge-kqev.onrender.com/api/v1/auth/verify-email?token=${token}`;
+  const verificationLink = `http://localhost:4000/api/v1/auth/verify-email?token=${token}`;
   const html = getVerificationEmailHtml(name || "User", verificationLink);
 
   await sendEmail(email, "Verify Email Address", html);
@@ -55,75 +56,16 @@ export const register = async (req: Request, res: Response): Promise<void> => {
   res.status(201).json({ message: "Registered. Please verify email." });
 };
 
-export const verifyEmail = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  const { token } = req.query;
-  const user = await UserModel.findOne({ verificationToken: token });
-
-  if (!user) {
-    const acceptHeader = req.headers["accept"];
-    if (acceptHeader && acceptHeader.includes("application/json")) {
-      res.status(404).json({ error: "Invalid or expired token" });
-      return;
-    }
-
-    res.redirect("https://fileforge-v1.vercel.app/verify-failed");
-    return;
-  }
-
-  user.verified = true;
-  user.verificationToken = "";
-  await user.save();
-
-  const acceptHeader = req.headers["accept"];
-  if (acceptHeader && acceptHeader.includes("application/json")) {
-    res.cookie("email_verified", "false", {
-      maxAge: 1000 * 60,
-      httpOnly: false,
-    });
-    res.json({ message: "Email verified successfully", email: user.email });
-    return;
-  }
-
-  res.cookie("email_verified", "true", {
-    maxAge: 1000 * 60,
-    httpOnly: false,
-  });
-  res.redirect("https://fileforge-v1.vercel.app/verified");
-};
-
-export const resendVerification = async (
-  req: Request,
-  res: Response
-): Promise<void> => {
-  const { email } = req.body;
-  const user = await UserModel.findOne({ email });
-  if (!user) {
-    res.status(404).json({ error: "User not found" });
-    return;
-  }
-
-  if (user.verified) {
-    res.status(400).json({ error: "Already verified" });
-    return;
-  }
-
-  const token = crypto.randomBytes(20).toString("hex");
-  user.verificationToken = token;
-  await user.save();
-
-  const verificationLink = `https://fileforge-kqev.onrender.com/api/v1/auth/verify-email?token=${token}`;
-  const html = getVerificationEmailHtml(user.name || "User", verificationLink);
-
-  await sendEmail(email, "Verify Email Address", html);
-  res.json({ message: "Verification email resent" });
-};
-
 export const login = async (req: Request, res: Response): Promise<void> => {
   const { email, password } = req.body;
   const user = await UserModel.findOne({ email }).lean();
+
+  if (!user?.password && user?.provider) {
+    res
+      .status(400)
+      .json({ error: `Use ${user?.provider} to login for this account` });
+    return;
+  }
 
   if (
     !user ||
@@ -165,6 +107,149 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   });
 };
 
+export const socialLogin = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const { email, name, photo, providerId, provider } = req.body;
+    if (!email || !providerId || !provider) {
+      res.status(400).json({ error: "Invalid user data" });
+      return;
+    }
+
+    let user = await UserModel.findOne({
+      $or: [{ email: email.toLowerCase() }, { provider, providerId }],
+    });
+
+    if (!user) {
+      user = new UserModel({
+        name: name || "User",
+        email: email.toLowerCase(),
+        provider,
+        providerId,
+        profilePic: photo,
+        verified: true,
+        createdVia: "social",
+      });
+      await user.save();
+    } else {
+      if (!user.provider && !user.providerId) {
+        user.provider = provider;
+        user.providerId = providerId;
+        if (!user.profilePic && photo) {
+          user.profilePic = photo;
+        }
+      }
+      user.lastLogin = new Date();
+      await user.save();
+    }
+
+    // Generate token
+    const token = generateToken({ userId: user._id });
+
+    // Set cookie
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+    // Update last login
+    await UserModel.findByIdAndUpdate(user._id, { lastLogin: new Date() });
+
+    res.json({
+      success: true,
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        profilePic: user.profilePic || null,
+        phone: user.phone || "",
+        address: user.address || {},
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+        verified: user.verified,
+        credits: user.credits || 0,
+        role: user.role || "user",
+        provider: user.provider || null,
+        providerId: user.providerId || null,
+        lastLogin: user.lastLogin || new Date(),
+      },
+    });
+  } catch (err) {
+    logger.error("Social login error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+export const verifyEmail = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const { token } = req.query;
+  const user = await UserModel.findOne({ verificationToken: token });
+
+  if (!user) {
+    const acceptHeader = req.headers["accept"];
+    if (acceptHeader && acceptHeader.includes("application/json")) {
+      res.status(404).json({ error: "Invalid or expired token" });
+      return;
+    }
+
+    res.redirect("http://localhost:5173/verify-failed");
+    return;
+  }
+
+  user.verified = true;
+  user.verificationToken = "";
+  await user.save();
+
+  const acceptHeader = req.headers["accept"];
+  if (acceptHeader && acceptHeader.includes("application/json")) {
+    res.cookie("email_verified", "false", {
+      maxAge: 1000 * 60,
+      httpOnly: false,
+    });
+    res.json({ message: "Email verified successfully", email: user.email });
+    return;
+  }
+
+  res.cookie("email_verified", "true", {
+    maxAge: 1000 * 60,
+    httpOnly: false,
+  });
+  res.redirect("http://localhost:5173/verified");
+};
+
+export const resendVerification = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const { email } = req.body;
+  const user = await UserModel.findOne({ email });
+  if (!user) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+
+  if (user.verified) {
+    res.status(400).json({ error: "Already verified" });
+    return;
+  }
+
+  const token = crypto.randomBytes(20).toString("hex");
+  user.verificationToken = token;
+  await user.save();
+
+  const verificationLink = `http://localhost:4000/api/v1/auth/verify-email?token=${token}`;
+  const html = getVerificationEmailHtml(user.name || "User", verificationLink);
+
+  await sendEmail(email, "Verify Email Address", html);
+  res.json({ message: "Verification email resent" });
+};
+
 export const logout = async (_req: Request, res: Response): Promise<void> => {
   res.clearCookie("token");
   res.json({ message: "Logged out successfully" });
@@ -186,7 +271,7 @@ export const forgotPassword = async (
   user.resetToken = token;
   await user.save();
 
-  const resetLink = `https://fileforge-v1.vercel.app/reset-password?token=${token}`;
+  const resetLink = `http://localhost:5173/reset-password?token=${token}`;
   const html = getResetPasswordEmailHtml(resetLink);
 
   await sendEmail(email, "Reset Your Password", html);

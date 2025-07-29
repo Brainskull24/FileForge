@@ -83,20 +83,3 @@ export const fileConversionCategories = [
     description: "Convert from Markdown formats",
   },
 ];
-
-// Advanced Tools
-// export const advancedTools = [
-//   // { id: "batch-processor", name: "Batch Processor", Icon: Layers, isPro: true },
-//   // {
-//   //   id: "workflow-builder",
-//   //   name: "Workflow Builder",
-//   //   Icon: Workflow,
-//   //   isPro: true,
-//   // },
-//   // { id: "api-tools", name: "API Tools", Icon: Code, isPro: true },
-//   // { id: "file-analyzer", name: "File Analyzer", Icon: Sparkles },
-//   // { id: "bulk-rename", name: "Bulk File Rename", Icon: FolderOpen },
-//   // { id: "file-splitter", name: "File Splitter", Icon: Scissors },
-//   // { id: "file-merger", name: "File Merger", Icon: Layers },
-//   // { id: "metadata-editor", name: "Metadata Editor", Icon: Settings },
-// ];

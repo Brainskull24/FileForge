@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, useInView } from "framer-motion";
-import { Zap, Globe, Star, Award } from "lucide-react";
+import { Zap, Globe, Star } from "lucide-react";
 import { stats } from "../../data/homeConfigs";
 
 function AnimatedCounter({
@@ -73,7 +73,7 @@ export default function Social() {
             <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
               Trusted by{" "}
               <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                50,000+
+                5000+
               </span>{" "}
               developers
             </h2>
@@ -82,39 +82,6 @@ export default function Social() {
               daily file conversion needs
             </p>
           </motion.div>
-
-          {/* Company Logos */}
-          {/* <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            viewport={{ once: true }}
-            className="mb-20"
-          >
-            <p className="text-sm text-gray-500 mb-8 font-medium">
-              TRUSTED BY TEAMS AT
-            </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-8 items-center">
-              {companies.map((company, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                  whileHover={{ scale: 1.1 }}
-                  className="group flex flex-col items-center gap-2 p-4 rounded-xl hover:bg-white hover:shadow-lg transition-all duration-300 cursor-pointer"
-                >
-                  <div className="text-3xl group-hover:scale-110 transition-transform duration-300">
-                    {company.logo}
-                  </div>
-                  <div className="text-sm font-semibold text-gray-600 group-hover:text-gray-900 transition-colors">
-                    {company.name}
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </motion.div> */}
 
           {/* Statistics */}
           <motion.div
@@ -175,12 +142,8 @@ export default function Social() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.8 }}
             viewport={{ once: true }}
-            className="mt-16 flex flex-wrap justify-center items-center gap-8 text-sm text-gray-500"
+            className="mt-16 flex flex-wrap justify-center items-center gap-16 text-sm text-gray-500"
           >
-            <div className="flex items-center gap-2">
-              <Award className="w-4 h-4 text-yellow-500" />
-              <span>SOC 2 Compliant</span>
-            </div>
             <div className="flex items-center gap-2">
               <Globe className="w-4 h-4 text-green-500" />
               <span>Available Worldwide</span>

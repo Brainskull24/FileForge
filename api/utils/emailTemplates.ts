@@ -14,7 +14,10 @@ const defaultFooter = `
   </tr>
 `;
 
-export const getVerificationEmailHtml = (name: string, link: string): string => `
+export const getVerificationEmailHtml = (
+  name: string,
+  link: string
+): string => `
   <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f4f7fb; font-family:'Segoe UI', sans-serif; padding: 20px 0;">
     <tr>
       <td align="center">

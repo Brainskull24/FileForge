@@ -7,23 +7,17 @@ import { toolConfigs } from "../../../data/toolConfigs";
 import { Welcome } from "../welcome-page";
 import { TextProcessor } from "./text-processor";
 import { FileProcessor } from "./file-processor";
-import type { UserCredits } from "../main";
+import { useAuth } from "../../../context/auth";
 
 interface MainWorkspaceProps {
   selectedTool: string | null;
   onFileProcess: (files: File[], operation: string) => void;
-  userCredits: UserCredits;
 }
 
-// Infer tool config type from the data object
 type ToolConfigs = typeof toolConfigs;
 type ToolKey = keyof ToolConfigs;
 type ToolConfig = ToolConfigs[ToolKey];
 
-/**
- * Safely resolve tool ID → config (or null if missing).
- * Helps avoid unsafe casts everywhere.
- */
 function getToolConfig(id: string | null): ToolConfig | null {
   if (!id) return null;
   return (toolConfigs as Record<string, ToolConfig>)[id] ?? null;
@@ -32,7 +26,6 @@ function getToolConfig(id: string | null): ToolConfig | null {
 export function MainWorkspace({
   selectedTool,
   onFileProcess,
-  userCredits,
 }: MainWorkspaceProps) {
   // --- Text tool state ---
   const [inputText, setInputText] = useState("");
@@ -46,6 +39,7 @@ export function MainWorkspace({
     lastModified?: number;
   } | null>(null);
   const [showOutput, setShowOutput] = useState(false);
+  const { user } = useAuth();
 
   // --- File tool state ---
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
@@ -128,7 +122,7 @@ export function MainWorkspace({
             </Badge>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Info className="h-4 w-4" />
-              Credits available: {userCredits.current}
+              Credits available: {user?.credits}
             </div>
           </div>
           <p className="text-muted-foreground">{currentTool.description}</p>

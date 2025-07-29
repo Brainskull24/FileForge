@@ -7,6 +7,7 @@ import {
   resendVerification,
   forgotPassword,
   resetPassword,
+  socialLogin
 } from "../controllers/authController";
 import multer from "multer";
 
@@ -16,6 +17,7 @@ const router = Router();
 
 router.post("/register", upload.single("profilePic"), register);
 router.post("/login", login);
+router.post("/social-login", socialLogin);
 router.post("/logout", logout);
 router.get("/verify-email", verifyEmail);
 router.post("/resend-verification", resendVerification);

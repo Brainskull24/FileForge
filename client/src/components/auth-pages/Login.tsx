@@ -75,12 +75,13 @@ const AuthPage: React.FC = () => {
 
     try {
       if (mode === "login") {
-        await api.post("/auth/login", { email, password });
-        const res = await api.get("/account/details");
-        flushSync(() => {
-          setUser(res.data);
-        });
-        navigate("/convertor");
+        const { data } = await api.post("/auth/login", { email, password });
+        if (data.success) {
+          const user = data.user;
+          setUser(user);
+          localStorage.setItem("user", JSON.stringify(user));
+          navigate("/convertor");
+        }
       } else {
         const formData = new FormData();
         formData.append("name", name);
@@ -93,13 +94,12 @@ const AuthPage: React.FC = () => {
           formData.append("profilePic", profilePic);
         }
 
-        const res = await api.post("/auth/register", formData, {
+        await api.post("/auth/register", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
-        const data = res.data;
-        console.log("Signup Success:", data);
+        toast.success("Signup Successful!");
         setShowVerification(true);
       }
     } catch (error: any) {
@@ -107,8 +107,44 @@ const AuthPage: React.FC = () => {
         error?.response?.data?.message ||
         error?.response?.data?.error ||
         "Something went wrong";
-      toast("Something went wrong", {
+      toast.error("Something went wrong", {
         description: message,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSocial = async (providerName: "Google" | "GitHub") => {
+    setLoading(true);
+
+    try {
+      const provider =
+        providerName === "Google" ? googleProvider : githubProvider;
+      const result = await signInWithPopup(auth, provider);
+      const firebaseUser = result.user;
+
+      const socialUserData = {
+        email: firebaseUser.email,
+        name: firebaseUser.displayName || "User",
+        photo: firebaseUser.photoURL,
+        providerId: firebaseUser.uid,
+        provider: providerName,
+      };
+
+      // Send to backend to create/update user in MongoDB
+      const res = await api.post("/auth/social-login", socialUserData);
+
+      // Set user in context with the full user data from backend
+      flushSync(() => {
+        setUser(res.data.user);
+      });
+
+      toast.success(`Successfully logged in with ${providerName}!`);
+      navigate("/convertor");
+    } catch (err: any) {
+      toast.error("Authentication failed", {
+        description: err.message || "Failed to login with social provider",
       });
     } finally {
       setLoading(false);
@@ -119,7 +155,7 @@ const AuthPage: React.FC = () => {
     setResendLoading(true);
     try {
       await api.post("/auth/resend-verification", { email });
-      toast("Mail Sent!", {
+      toast.success("Mail Sent!", {
         description: "Verification email sent successfully!",
       });
     } catch (error: any) {
@@ -127,41 +163,11 @@ const AuthPage: React.FC = () => {
         error?.response?.data?.message ||
         error?.response?.data?.error ||
         "Failed to resend email";
-      toast("Failed to resend email", {
+      toast.error("Failed to resend email", {
         description: message,
       });
     } finally {
       setResendLoading(false);
-    }
-  };
-
-  const handleSocial = async (providerName: string) => {
-    setLoading(true);
-    try {
-      const provider =
-        providerName === "Google" ? googleProvider : githubProvider;
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      console.log("Firebase user:", user);
-
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          email: user.email,
-          name: user.displayName,
-          photo: user.photoURL,
-          uid: user.uid,
-          provider: providerName,
-        })
-      );
-
-      navigate("/convertor");
-    } catch (err: any) {
-      toast("Authentication failed", {
-        description: err.message,
-      });
-    } finally {
-      setLoading(false);
     }
   };
 

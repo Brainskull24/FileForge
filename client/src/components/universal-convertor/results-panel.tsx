@@ -183,14 +183,16 @@ export function ResultsPanel({
                 {activeJobs.map((job) => (
                   <Card key={job.id} className="p-3">
                     <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
+                      <div className="w-full flex flex-wrap justify-between gap-y-1">
+                        <div className="flex items-center gap-2 min-w-0">
                           {renderStatusIcon(job.status)}
-                          <span className="text-sm font-medium truncate">
+                          <span className="text-sm font-medium break-words">
                             {job.fileName}
                           </span>
                         </div>
-                        {renderStatusBadge(job.status)}
+                        <div className="shrink-0">
+                          {renderStatusBadge(job.status)}
+                        </div>
                       </div>
 
                       <div className="text-xs text-muted-foreground">
@@ -203,9 +205,6 @@ export function ResultsPanel({
                           <Progress value={job.progress} className="h-1" />
                           <div className="flex justify-between text-xs text-muted-foreground">
                             <span>{Math.round(job.progress)}%</span>
-                            {/* {job.estimatedTime != null && (
-                              <span>{job.estimatedTime}s remaining</span>
-                            )} */}
                           </div>
                         </div>
                       )}
@@ -230,14 +229,12 @@ export function ResultsPanel({
                       .map((job) => (
                         <div
                           key={job.id}
-                          className="flex items-center justify-between p-2 rounded-lg bg-background"
+                          className="flex items-start justify-between p-2 rounded-lg bg-background flex-wrap gap-y-1"
                         >
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <FileText className="h-3 w-3 text-muted-foreground" />
-                              <span className="text-sm truncate">
-                                {job.fileName}
-                              </span>
+                            <div className="flex items-start gap-2 flex-wrap">
+                              <FileText className="h-3 w-3 text-muted-foreground shrink-0 mt-[2px]" />
+                              <span className="text-sm">{job.fileName}</span>
                             </div>
                             <div className="text-xs text-muted-foreground">
                               {formatTimeAgo(job.createdAt)}
@@ -246,7 +243,7 @@ export function ResultsPanel({
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="h-8 w-8 p-0"
+                            className="h-8 w-8 p-0 shrink-0"
                             onClick={() => handleDownload(job)}
                             disabled={!job.downloadUrl}
                           >
@@ -276,9 +273,9 @@ export function ResultsPanel({
                         key={job.id}
                         className="p-2 rounded-lg bg-red-50 dark:bg-red-950/20"
                       >
-                        <div className="flex items-center gap-2">
-                          <FileText className="h-3 w-3 text-red-500" />
-                          <span className="text-sm truncate">
+                        <div className="flex items-start gap-2 flex-wrap">
+                          <FileText className="h-3 w-3 text-red-500 shrink-0 mt-[2px]" />
+                          <span className="text-sm break-words">
                             {job.fileName}
                           </span>
                         </div>

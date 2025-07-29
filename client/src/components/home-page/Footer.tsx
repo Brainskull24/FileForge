@@ -22,27 +22,27 @@ const Footer = () => {
     if (!email) return;
 
     if (!user) {
-      return toast("Not logged in", {
+      return toast.error("Not logged in", {
         description: "Please log in to subscribe.",
       });
     }
 
     if (email !== user.email) {
-      return toast("Email mismatch", {
+      return toast.error("Email mismatch", {
         description: "Please use the email associated with your account.",
       });
     }
 
     try {
       const res = await api.post("/marketing/subscribe", { email });
-      toast("Subscribed!", {
+      toast.success("Subscribed!", {
         description: res.data.message || "You're now subscribed.",
       });
       setEmail("");
     } catch (err: any) {
       const description =
         err?.response?.data?.error || "Subscription failed.";
-      toast("Newsletter Subscription failed", { description });
+      toast.error("Newsletter Subscription failed", { description });
       setEmail("");
     }
   };

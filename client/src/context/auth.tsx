@@ -1,10 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { onAuthStateChanged, getIdToken } from "firebase/auth";
-import { auth } from "../lib/firebase";
 import type { ReactNode } from "react";
 import api from "../lib/axios";
-
-type AuthType = "firebase" | "custom";
+import { toast } from "sonner";
 
 interface Address {
   street?: string;
@@ -18,7 +15,7 @@ export interface User {
   email: string | null;
   name: string | null;
   uid: string;
-  photo: string | null;
+  profilePic: string | null;
   role?: string;
   phone?: string;
   credits?: number;
@@ -26,15 +23,17 @@ export interface User {
   updatedAt?: string;
   lastLogin?: Date;
   address?: Address;
+  verified: boolean;
+  provider?: string;
+  providerId?: string;
 }
 
 interface AuthContextType {
   user: User | null;
-  token: string | null; // will only be used for Firebase
-  authType: AuthType | null;
   loading: boolean;
   setUser: (user: User | null) => void;
-  logout: () => void;
+  checkAuth: () => Promise<void>;
+  logout: () => Promise<void>;
   deductCredits: (count: number, credits: number) => void;
 }
 
@@ -42,88 +41,71 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null); // Only used for Firebase
-  const [authType, setAuthType] = useState<AuthType | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-  useEffect(() => {
-    if (user) {
-      setLoading(false);
-      return;
-    }
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        // ✅ Firebase flow
-        const token = await getIdToken(firebaseUser);
-        const { email, displayName, uid, photoURL } = firebaseUser;
+  const checkAuth = async () => {
+    try {
+      const storedUser = localStorage.getItem("user");
 
-        const userData: User = {
-          email,
-          name: displayName,
-          uid,
-          photo: photoURL,
-          credits: 0,
-        };
-
-        setUser(userData);
-        setToken(token);
-        setAuthType("firebase");
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+        setLoading(false);
       } else {
-        try {
-          const res = await api.get("/account/details"); // token sent via cookie
-          const backendUser = res.data;
-
-          const userData: User = {
-            email: backendUser.email,
-            name: backendUser.name,
-            uid: backendUser._id,
-            photo: backendUser.profilePic,
-            role: backendUser.role || "",
-            phone: backendUser.phone || "",
-            credits: backendUser.credits,
-            createdAt: backendUser.createdAt,
-            updatedAt: backendUser.updatedAt,
-            lastLogin: backendUser.lastLogin,
-            address: backendUser.address || {}, // structured address
-          };
-
-          setUser(userData);
-          setToken(null);
-          setAuthType("custom");
-        } catch (error) {
-          console.warn("No valid backend session");
-          setUser(null);
-          setToken(null);
-          setAuthType(null);
-        }
+        setLoading(true);
       }
+      const res = await api.get("/account/details");
 
+      const backendUser = res.data;
+
+      const userData: User = {
+        email: backendUser.email,
+        name: backendUser.name,
+        uid: backendUser._id,
+        profilePic: backendUser.profilePic,
+        role: backendUser.role || "",
+        phone: backendUser.phone || "",
+        credits: backendUser.credits,
+        createdAt: backendUser.createdAt,
+        updatedAt: backendUser.updatedAt,
+        lastLogin: backendUser.lastLogin,
+        verified: backendUser.verified || false,
+        provider: backendUser.provider || "",
+        providerId: backendUser.providerId || "",
+        address: backendUser.address || {},
+      };
+
+      setUser(userData);
+      localStorage.setItem("user", JSON.stringify(userData));
+    } catch (error) {
+      setUser(null);
+      localStorage.removeItem("user");
+    } finally {
       setLoading(false);
-    });
+    }
+  };
 
-    return () => unsubscribe();
+  useEffect(() => {
+    checkAuth();
   }, []);
 
   const logout = async () => {
-    if (authType === "firebase") {
-      await auth.signOut();
-    } else if (authType === "custom") {
-      await api.post("/auth/logout"); // optional if you build this route
+    try {
+      await api.post("/auth/logout");
+      setUser(null);
+      localStorage.removeItem("user");
+    } catch (error) {
+      toast.error("Logout error:" + error);
     }
-
-    setUser(null);
-    setToken(null);
-    setAuthType(null);
   };
 
   const deductCredits = async (count: number, creditsPerUnit: number) => {
     const creditCost = count * creditsPerUnit;
-  
+
     try {
       const { data } = await api.put("/account/credit", {
         creditsDeducted: creditCost,
       });
-  
+
       // Defensive update
       setUser((prev) => {
         if (!prev) return prev;
@@ -133,13 +115,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         };
       });
     } catch (error) {
-      console.error("Failed to deduct credits", error);
+      toast.error("Failed to deduct credits" + error);
     }
   };
 
   return (
     <AuthContext.Provider
-      value={{ user, token, authType, loading, setUser, logout, deductCredits }}
+      value={{ user, loading, setUser, logout, deductCredits, checkAuth }}
     >
       {children}
     </AuthContext.Provider>

@@ -17,6 +17,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 import api from "../../lib/axios";
+import { toast } from "sonner";
 
 const ForgotPasswordPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
@@ -44,7 +45,7 @@ const ForgotPasswordPage: React.FC = () => {
         throw new Error("Failed to send reset link");
       }
     } catch (error: any) {
-      alert(error.message || "Something went wrong");
+      toast.error(error.message || "Something went wrong");
     } finally {
       setLoading(false);
     }

@@ -13,7 +13,6 @@ import { Check } from "lucide-react";
 import { ProfileTab } from "./profile-tab";
 import { SecurityTab } from "./security-tab";
 import { BillingTab } from "./billing-tab";
-import { PrivacyTab } from "./privacy-tab";
 import { useAuth } from "../../context/auth";
 
 export default function AccountSettings() {
@@ -61,18 +60,9 @@ export default function AccountSettings() {
             <TabsTrigger value="security" className="lg:px-4">
               Security
             </TabsTrigger>
-            {/* <TabsTrigger value="preferences" className="lg:px-4">
-              Preferences
-            </TabsTrigger> */}
             <TabsTrigger value="billing" className="lg:px-4">
               Billing
             </TabsTrigger>
-            {/* <TabsTrigger value="api-keys" className="lg:px-4">
-              API Keys
-            </TabsTrigger> */}
-            {/* <TabsTrigger value="privacy" className="lg:px-4">
-              Privacy
-            </TabsTrigger> */}
           </TabsList>
 
           <div className="lg:flex lg:gap-6">
@@ -99,16 +89,6 @@ export default function AccountSettings() {
                 >
                   Security
                 </button>
-                {/* <button
-                  onClick={() => setActiveTab("preferences")}
-                  className={`w-full text-left px-4 py-2 rounded-md text-sm transition-colors ${
-                    activeTab === "preferences"
-                      ? "bg-primary text-primary-foreground"
-                      : "hover:bg-muted"
-                  }`}
-                >
-                  Preferences
-                </button> */}
                 <button
                   onClick={() => setActiveTab("billing")}
                   className={`w-full text-left px-4 py-2 rounded-md text-sm transition-colors ${
@@ -119,30 +99,9 @@ export default function AccountSettings() {
                 >
                   Billing
                 </button>
-                {/* <button
-                  onClick={() => setActiveTab("api-keys")}
-                  className={`w-full text-left px-4 py-2 rounded-md text-sm transition-colors ${
-                    activeTab === "api-keys"
-                      ? "bg-primary text-primary-foreground"
-                      : "hover:bg-muted"
-                  }`}
-                >
-                  API Keys
-                </button> */}
-                {/* <button
-                  onClick={() => setActiveTab("privacy")}
-                  className={`w-full text-left px-4 py-2 rounded-md text-sm transition-colors ${
-                    activeTab === "privacy"
-                      ? "bg-primary text-primary-foreground"
-                      : "hover:bg-muted"
-                  }`}
-                >
-                  Privacy
-                </button> */}
               </div>
             </div>
 
-            {/* Tab Content */}
             <div className="flex-1">
               <TabsContent value="profile" className="mt-0">
                 <ProfileTab />
@@ -150,17 +109,8 @@ export default function AccountSettings() {
               <TabsContent value="security" className="mt-0">
                 <SecurityTab />
               </TabsContent>
-              {/* <TabsContent value="preferences" className="mt-0">
-                <PreferencesTab />
-              </TabsContent> */}
               <TabsContent value="billing" className="mt-0">
                 <BillingTab />
-              </TabsContent>
-              {/* <TabsContent value="api-keys" className="mt-0">
-                <ApiKeysTab />
-              </TabsContent> */}
-              <TabsContent value="privacy" className="mt-0">
-                <PrivacyTab />
               </TabsContent>
             </div>
           </div>

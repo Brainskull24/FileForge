@@ -50,15 +50,6 @@ const PricingTeaser = () => {
                     </li>
                   ))}
                 </ul>
-                {/* <Button
-                  className="w-full"
-                  variant={plan.popular ? "default" : "outline"}
-                  onClick={()=>{
-
-                  }}
-                >
-                  {plan.name === "Enterprise" ? "Contact Sales" : (plan.name === "Pro" ? "Get Started": "Current Plan")}
-                </Button> */}
               </CardContent>
             </Card>
           ))}

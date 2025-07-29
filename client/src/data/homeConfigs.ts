@@ -81,38 +81,26 @@ export const pricingPlans = [
   },
 ];
 
-
 export const stats = [
-    {
-      value: 50000,
-      label: "Active Developers",
-      suffix: "+",
-      icon: Users,
-      color: "from-blue-500 to-cyan-500",
-    },
-    {
-      value: 2.5,
-      label: "Files Converted Daily",
-      suffix: "M+",
-      icon: TrendingUp,
-      color: "from-purple-500 to-pink-500",
-    },
-    {
-      value: 99.9,
-      label: "Uptime Guarantee",
-      suffix: "%",
-      icon: Zap,
-      color: "from-green-500 to-emerald-500",
-    },
-  ];
-
-// export const companies = [
-//   { name: "Microsoft", logo: "🏢" },
-//   { name: "Google", logo: "🔍" }
-//   { name: "Amazon", logo: "📦" },
-//   { name: "Netflix", logo: "🎬" },
-//   { name: "Spotify", logo: "🎵" },
-//   { name: "Uber", logo: "🚗" },
-//   { name: "Airbnb", logo: "🏠" },
-//   { name: "Tesla", logo: "⚡" },
-// ];
+  {
+    value: 500,
+    label: "Active Developers",
+    suffix: "+",
+    icon: Users,
+    color: "from-blue-500 to-cyan-500",
+  },
+  {
+    value: 2.5,
+    label: "Files Converted Daily",
+    suffix: "k+",
+    icon: TrendingUp,
+    color: "from-purple-500 to-pink-500",
+  },
+  {
+    value: 99.9,
+    label: "Uptime Guarantee",
+    suffix: "%",
+    icon: Zap,
+    color: "from-green-500 to-emerald-500",
+  },
+];

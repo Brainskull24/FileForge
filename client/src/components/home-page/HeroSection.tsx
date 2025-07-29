@@ -89,7 +89,7 @@ export default function HeroSection() {
             >
               <Sparkles className="w-4 h-4 text-yellow-300" />
               <span className="text-sm text-white font-medium">
-                Trusted by 50,000+ developers
+                Trusted by 5,000+ developers
               </span>
             </motion.div>
 
