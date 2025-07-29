@@ -18,14 +18,11 @@ import {
   LogOut,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { signOut } from "firebase/auth";
 import { useAuth } from "../../context/auth";
-import { auth } from "../../lib/firebase";
-import api from "../../lib/axios";
 import { toast } from "sonner";
 
 export function DashboardHeader() {
-  const { authType, logout, user } = useAuth();
+  const { logout, user } = useAuth();
   const navigate = useNavigate();
 
   const MAX_CREDITS = 500;
@@ -33,13 +30,7 @@ export function DashboardHeader() {
 
   const handleLogout = async () => {
     try {
-      if (authType === "firebase") {
-        await signOut(auth);
-      } else if (authType === "custom") {
-        await api.post("/auth/logout");
-      }
       logout();
-      toast.success("Logged out successfully!")
       navigate("/");
     } catch (error) {
       toast.error("Failed to logout. Try again.");
