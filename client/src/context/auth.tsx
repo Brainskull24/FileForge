@@ -1,4 +1,3 @@
-// Fixed AuthContext with proper logout handling
 import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import api from "../lib/axios";
@@ -83,15 +82,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(userData);
       localStorage.setItem("user", JSON.stringify(userData));
     } catch (error: any) {
-      console.error("Auth check error:", error);
-      
-      // Only clear user if it's a 401/403 (unauthorized) error
-      // Don't clear on network errors, 500 errors, etc.
+      toast.error("Auth check error:", error);
       if (error?.response?.status === 401 || error?.response?.status === 403) {
         setUser(null);
         localStorage.removeItem("user");
       }
-      // For other errors (network, 500, etc.), keep the cached user data
     } finally {
       setLoading(false);
     }
@@ -103,13 +98,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = async () => {
     try {
-      // Call the API to clear the cookie first
       await api.post("/auth/logout");
     } catch (error) {
-      console.error("Logout API error:", error);
-      // Continue with logout even if API fails
+      toast.error("Logout API error:" + error);
     } finally {
-      // Always clear local state regardless of API success/failure
       setUser(null);
       localStorage.removeItem("user");
     }
