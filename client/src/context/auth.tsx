@@ -46,9 +46,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const checkAuth = async () => {
     try {
-      setLoading(true);
+      // First check if we have stored user data
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        try {
+          setUser(JSON.parse(storedUser));
+          setLoading(false); // Set loading false immediately if we have cached data
+        } catch (e) {
+          localStorage.removeItem("user");
+        }
+      } else {
+        setLoading(true);
+      }
 
-      // First try to get fresh data from backend
+      // Then try to get fresh data from backend
       const res = await api.get("/account/details");
       const backendUser = res.data;
 
@@ -71,20 +82,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       setUser(userData);
       localStorage.setItem("user", JSON.stringify(userData));
-    } catch (error) {
-      // If backend call fails, clear everything
-      setUser(null);
-      localStorage.removeItem("user");
-
-      // Only as fallback, check if we have stored user data
-      const storedUser = localStorage.getItem("user");
-      if (storedUser) {
-        try {
-          setUser(JSON.parse(storedUser));
-        } catch (e) {
-          localStorage.removeItem("user");
-        }
+    } catch (error: any) {
+      console.error("Auth check error:", error);
+      
+      // Only clear user if it's a 401/403 (unauthorized) error
+      // Don't clear on network errors, 500 errors, etc.
+      if (error?.response?.status === 401 || error?.response?.status === 403) {
+        setUser(null);
+        localStorage.removeItem("user");
       }
+      // For other errors (network, 500, etc.), keep the cached user data
     } finally {
       setLoading(false);
     }
@@ -96,12 +103,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = async () => {
     try {
+      // Call the API to clear the cookie first
+      await api.post("/auth/logout");
+    } catch (error) {
+      console.error("Logout API error:", error);
+      // Continue with logout even if API fails
+    } finally {
+      // Always clear local state regardless of API success/failure
       setUser(null);
       localStorage.removeItem("user");
-      await api.post("/auth/logout");
-      await checkAuth();
-    } catch (error) {
-      toast.error("Logout completed, but there was a server error");
     }
   };
 
