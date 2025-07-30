@@ -4,7 +4,6 @@ import multer from "multer";
 import FormData from "form-data";
 import logger from "../utils/logger";
 
-const PYTHON_SERVER_URL = "http://localhost:8000/api/v1/file-conversion";
 
 const router = Router();
 const upload = multer();
@@ -27,7 +26,7 @@ router.post("/:operation", upload.single("file"), async (req, res) => {
     formData.append("file", req.file?.buffer, req.file?.originalname);
 
     // Construct Python server URL
-    const pythonUrl = `${PYTHON_SERVER_URL}/${resource}?conversion=${encodeURIComponent(
+    const pythonUrl = `${process.env.PYTHON_SERVER_URL}/api/v1/file-conversion/${resource}?conversion=${encodeURIComponent(
       operation
     )}`;
 
