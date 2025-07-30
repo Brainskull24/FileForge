@@ -82,7 +82,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(userData);
       localStorage.setItem("user", JSON.stringify(userData));
     } catch (error: any) {
-      toast.error("Auth check error:", error);
       if (error?.response?.status === 401 || error?.response?.status === 403) {
         setUser(null);
         localStorage.removeItem("user");
