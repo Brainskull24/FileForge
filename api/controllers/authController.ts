@@ -259,7 +259,12 @@ export const resendVerification = async (
 };
 
 export const logout = async (_req: Request, res: Response): Promise<void> => {
-  res.clearCookie("token");
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    domain: process.env.NODE_ENV === "production" ? "fileforge-v1.vercel.app" : undefined,
+  });
   res.json({ message: "Logged out successfully" });
 };
 
