@@ -82,12 +82,20 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   }
 
   const token = generateToken({ userId: user._id });
-  res.cookie("token", token, {
+  
+  // Fixed cookie configuration - consistent between login and logout
+  const cookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
+    // Add domain for production if needed
+    ...(process.env.NODE_ENV === "production" && { 
+      domain: process.env.COOKIE_DOMAIN || ".vercel.app" 
+    })
+  } as const;
+  
+  res.cookie("token", token, cookieOptions);
 
   await UserModel.findByIdAndUpdate(user._id, { lastLogin: new Date() });
 
@@ -230,7 +238,6 @@ export const verifyEmail = async (
   }
 };
 
-
 export const resendVerification = async (
   req: Request,
   res: Response
@@ -259,12 +266,18 @@ export const resendVerification = async (
 };
 
 export const logout = async (_req: Request, res: Response): Promise<void> => {
-  res.clearCookie("token", {
+  // Match the exact same cookie configuration as login
+  const cookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    domain: process.env.NODE_ENV === "production" ? "fileforge-v1.vercel.app" : undefined,
-  });
+    // Use same domain logic as login
+    ...(process.env.NODE_ENV === "production" && { 
+      domain: process.env.COOKIE_DOMAIN || ".vercel.app" 
+    })
+  } as const;
+
+  res.clearCookie("token", cookieOptions);
   res.json({ message: "Logged out successfully" });
 };
 

@@ -12,7 +12,7 @@ export default function Header() {
 
   const handleLogout = async () => {
     try {
-      logout();
+      await logout(); 
       navigate("/");
     } catch (error) {
       toast.error("Failed to logout. Try again.");

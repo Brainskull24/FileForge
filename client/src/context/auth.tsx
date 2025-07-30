@@ -1,3 +1,4 @@
+// Fixed AuthContext with proper logout handling
 import { createContext, useContext, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import api from "../lib/axios";
@@ -45,16 +46,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const checkAuth = async () => {
     try {
-      const storedUser = localStorage.getItem("user");
+      setLoading(true);
 
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
-        setLoading(false);
-      } else {
-        setLoading(true);
-      }
+      // First try to get fresh data from backend
       const res = await api.get("/account/details");
-
       const backendUser = res.data;
 
       const userData: User = {
@@ -77,8 +72,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(userData);
       localStorage.setItem("user", JSON.stringify(userData));
     } catch (error) {
+      // If backend call fails, clear everything
       setUser(null);
       localStorage.removeItem("user");
+
+      // Only as fallback, check if we have stored user data
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        try {
+          setUser(JSON.parse(storedUser));
+        } catch (e) {
+          localStorage.removeItem("user");
+        }
+      }
     } finally {
       setLoading(false);
     }
@@ -90,11 +96,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = async () => {
     try {
-      await api.post("/auth/logout");
       setUser(null);
       localStorage.removeItem("user");
+      await api.post("/auth/logout");
+      await checkAuth();
     } catch (error) {
-      toast.error("Logout error:" + error);
+      toast.error("Logout completed, but there was a server error");
     }
   };
 
