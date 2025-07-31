@@ -55,7 +55,7 @@ const AuthPage: React.FC = () => {
   const [postalCode, setPostalCode] = useState("");
 
   const navigate = useNavigate();
-  const { setUser } = useAuth();
+  const { setUser, checkAuth } = useAuth();
 
   const handleProfilePicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -77,9 +77,7 @@ const AuthPage: React.FC = () => {
       if (mode === "login") {
         const { data } = await api.post("/auth/login", { email, password });
         if (data.success) {
-          const user = data.user;
-          setUser(user);
-          localStorage.setItem("user", JSON.stringify(user));
+          await checkAuth();
           navigate("/convertor");
         }
       } else {

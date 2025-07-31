@@ -45,17 +45,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const checkAuth = async () => {
     try {
-      // First check if we have stored user data
       const storedUser = localStorage.getItem("user");
       if (storedUser) {
         try {
           setUser(JSON.parse(storedUser));
-          setLoading(false); // Set loading false immediately if we have cached data
         } catch (e) {
           localStorage.removeItem("user");
         }
-      } else {
-        setLoading(true);
       }
 
       // Then try to get fresh data from backend

@@ -14,7 +14,7 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
         <p className="text-sm text-muted-foreground">Loading...</p>
       </div>
     );
-  if (user) return <Navigate to="/" replace />;
+  if (user) return <Navigate to="/convertor" replace />;
   return <>{children}</>;
 };
 

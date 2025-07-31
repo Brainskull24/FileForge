@@ -18,8 +18,19 @@ import ResetPasswordPage from "./components/auth-pages/ResetPassword";
 import APIDocsComingSoon from "./components/api-docs/coming-soon";
 import NotFound from "./components/not-found/main";
 import { Toaster } from "sonner";
+import { useAuth } from "./context/auth";
+import { Loader2 } from "lucide-react";
 
 function App() {
+  const { loading } = useAuth();
+  if (loading) {
+    return (
+      <div className="fixed inset-0 flex flex-col items-center justify-center bg-background z-50">
+        <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
+        <p className="text-sm text-muted-foreground">Loading...</p>
+      </div>
+    );
+  }
   return (
     <>
       <Toaster richColors position="top-right" />
