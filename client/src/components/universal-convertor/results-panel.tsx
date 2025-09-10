@@ -1,4 +1,4 @@
-import { useMemo, Fragment } from "react";
+import { useMemo, Fragment, useState } from "react";
 import { Card } from "../ui/card";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
@@ -21,7 +21,7 @@ import { useAuth } from "../../context/auth";
 
 interface ResultsPanelProps {
   processingJobs: ProcessingJob[];
-  totalCredits?: number; // optional override; defaults to 500
+  totalCredits?: number;
 }
 
 const STATUS_META = {
@@ -34,7 +34,7 @@ const STATUS_META = {
   },
   processing: {
     label: "Processing",
-    color: "text-blue-600",
+    color: "text-gray-300",
     badgeVariant: "default" as const,
     Icon: Loader2,
     spin: true,
@@ -67,7 +67,6 @@ export function ResultsPanel({
   const usedCredits = totalCredits - remainingCredits;
   const usedPercentage = (usedCredits / totalCredits) * 100;
 
-  // --- Derived Lists (memoized) ---
   const { activeJobs, completedJobs, failedJobs } = useMemo(() => {
     const active: ProcessingJob[] = [];
     const completed: ProcessingJob[] = [];
@@ -80,7 +79,6 @@ export function ResultsPanel({
     return { activeJobs: active, completedJobs: completed, failedJobs: failed };
   }, [processingJobs]);
 
-  // --- Formatting Helpers ---
   const formatFileSize = (bytes: number) => {
     if (!Number.isFinite(bytes) || bytes < 0) return "—";
     if (bytes === 0) return "0 B";
@@ -102,7 +100,6 @@ export function ResultsPanel({
     return `${Math.floor(diffSec / 86400)}d ago`;
   };
 
-  // --- Render Helpers ---
   const renderStatusBadge = (status: ProcessingJob["status"]) => {
     const meta = STATUS_META[status];
     return (
@@ -128,12 +125,13 @@ export function ResultsPanel({
     a.href = job.downloadUrl;
     a.download = `converted-${job.fileName}`;
     a.click();
-    setTimeout(() => URL.revokeObjectURL(job.downloadUrl!), 2000); // cleanup
+    setTimeout(() => URL.revokeObjectURL(job.downloadUrl!), 2000);
   };
 
+  const [showAllCompleted, setShowAllCompleted] = useState(false);
+
   return (
-    <div className="w-[350px] border-l bg-muted/30 flex flex-col">
-      {/* Credits Usage */}
+    <div className="w-[350px] border-l bg-muted/30 flex flex-col h-full">
       <div className="p-4 border-b">
         <div className="space-y-3">
           <div className="flex items-center justify-between">
@@ -163,8 +161,7 @@ export function ResultsPanel({
         </div>
       </div>
 
-      {/* Processing Queue */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col w-full h-0">
         <div className="p-4 border-b">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold">Processing Queue</h3>
@@ -172,21 +169,20 @@ export function ResultsPanel({
           </div>
         </div>
 
-        <ScrollArea className="flex-1">
-          <div className="p-4 space-y-4">
-            {/* Active Jobs */}
+        <ScrollArea className="flex-1 w-full">
+          <div className="p-4 space-y-4 w-full">
             {activeJobs.length > 0 && (
-              <div className="space-y-3">
+              <div className="space-y-3 w-full">
                 <h4 className="text-sm font-medium text-muted-foreground">
                   Currently Processing
                 </h4>
                 {activeJobs.map((job) => (
-                  <Card key={job.id} className="p-3">
+                  <Card key={job.id} className="p-3 w-[100%]">
                     <div className="space-y-2">
-                      <div className="w-full flex flex-wrap justify-between gap-y-1">
-                        <div className="flex items-center gap-2 min-w-0">
+                      <div className="flex items-center justify-between ">
+                        <div className="flex items-center gap-2">
                           {renderStatusIcon(job.status)}
-                          <span className="text-sm font-medium break-words">
+                          <span className="text-sm font-medium truncate max-w-[200px]">
                             {job.fileName}
                           </span>
                         </div>
@@ -214,7 +210,6 @@ export function ResultsPanel({
               </div>
             )}
 
-            {/* Completed Jobs */}
             {completedJobs.length > 0 && (
               <Fragment>
                 {activeJobs.length > 0 && <Separator />}
@@ -224,39 +219,50 @@ export function ResultsPanel({
                     Completed ({completedJobs.length})
                   </h4>
                   <div className="space-y-2">
-                    {completedJobs
-                      .slice(0, MAX_COMPLETED_VISIBLE)
-                      .map((job) => (
-                        <div
-                          key={job.id}
-                          className="flex items-start justify-between p-2 rounded-lg bg-background flex-wrap gap-y-1"
-                        >
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start gap-2 flex-wrap">
-                              <FileText className="h-3 w-3 text-muted-foreground shrink-0 mt-[2px]" />
-                              <span className="text-sm">{job.fileName}</span>
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              {formatTimeAgo(job.createdAt)}
-                            </div>
+                    {(showAllCompleted
+                      ? completedJobs
+                      : completedJobs.slice(0, MAX_COMPLETED_VISIBLE)
+                    ).map((job) => (
+                      <div
+                        key={job.id}
+                        className="flex items-center justify-between p-2 rounded-lg bg-background w-full border "
+                      >
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <FileText className="h-3 w-3 text-muted-foreground" />
+                            <span className="text-sm truncate max-w-[200px]">
+                              {job.fileName}
+                            </span>
                           </div>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-8 w-8 p-0 shrink-0"
-                            onClick={() => handleDownload(job)}
-                            disabled={!job.downloadUrl}
-                          >
-                            <Download className="h-3 w-3" />
-                          </Button>
+                          <div className="text-xs text-muted-foreground">
+                            {formatTimeAgo(job.createdAt)}
+                          </div>
                         </div>
-                      ))}
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-8 w-8 p-0"
+                          onClick={() => handleDownload(job)}
+                          disabled={!job.downloadUrl}
+                        >
+                          <Download className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
+                    {completedJobs.length > MAX_COMPLETED_VISIBLE && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowAllCompleted(!showAllCompleted)}
+                      >
+                        {showAllCompleted ? "Show Less" : "Show More"}
+                      </Button>
+                    )}
                   </div>
                 </div>
               </Fragment>
             )}
 
-            {/* Failed Jobs */}
             {failedJobs.length > 0 && (
               <Fragment>
                 {(activeJobs.length > 0 || completedJobs.length > 0) && (
@@ -271,11 +277,11 @@ export function ResultsPanel({
                     {failedJobs.slice(0, MAX_FAILED_VISIBLE).map((job) => (
                       <div
                         key={job.id}
-                        className="p-2 rounded-lg bg-red-50 dark:bg-red-950/20"
+                        className="p-2 rounded-lg bg-red-50 dark:bg-red-950/20 w-full border "
                       >
-                        <div className="flex items-start gap-2 flex-wrap">
-                          <FileText className="h-3 w-3 text-red-500 shrink-0 mt-[2px]" />
-                          <span className="text-sm break-words">
+                        <div className="flex items-center gap-2">
+                          <FileText className="h-3 w-3 text-red-500" />
+                          <span className="text-sm truncate max-w-[200px]">
                             {job.fileName}
                           </span>
                         </div>
@@ -289,7 +295,6 @@ export function ResultsPanel({
               </Fragment>
             )}
 
-            {/* Empty State */}
             {processingJobs.length === 0 && (
               <div className="text-center py-8">
                 <History className="h-8 w-8 text-muted-foreground mx-auto mb-2" />

@@ -10,6 +10,9 @@ import {
 } from "../utils/emailTemplates";
 import logger from "../utils/logger";
 
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:4000";
+
 export const register = async (req: Request, res: Response): Promise<void> => {
   const { name, email, password, phone, address } = req.body;
   const file = req.file;
@@ -47,7 +50,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     verificationToken: token,
   });
 
-  const verificationLink = `${process.env.BACKEND_URL}/api/v1/auth/verify-email?token=${token}`;
+  const verificationLink = `${BACKEND_URL}/api/v1/auth/verify-email?token=${token}`;
   const html = getVerificationEmailHtml(name || "User", verificationLink);
 
   await sendEmail(email, "Verify Email Address", html);
@@ -211,6 +214,8 @@ export const verifyEmail = async (
     } else {
       res.redirect(`${process.env.VITE_FE_URL}/verify-failed`);
     }
+
+    res.redirect(`${FRONTEND_URL}/verify-failed`);
     return;
   }
 
@@ -229,9 +234,14 @@ export const verifyEmail = async (
   const acceptHeader = req.headers["accept"];
   if (acceptHeader && acceptHeader.includes("application/json")) {
     res.json({ message: "Email verified successfully", email: user.email });
-  } else {
-    res.redirect(`${process.env.VITE_FE_URL}/verified`);
+    return;
   }
+
+  res.cookie("email_verified", "true", {
+    maxAge: 1000 * 60,
+    httpOnly: false,
+  });
+  res.redirect(`${FRONTEND_URL}/verified`);
 };
 
 export const resendVerification = async (
@@ -289,7 +299,7 @@ export const forgotPassword = async (
   user.resetToken = token;
   await user.save();
 
-  const resetLink = `/reset-password?token=${token}`;
+  const resetLink = `${FRONTEND_URL}/reset-password?token=${token}`;
   const html = getResetPasswordEmailHtml(resetLink);
 
   await sendEmail(email, "Reset Your Password", html);

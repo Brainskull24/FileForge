@@ -1,3 +1,4 @@
+// Modules and Libraries
 import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
@@ -28,10 +29,10 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+
 app.use(express.json());
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(bodyParser.urlencoded({ extended: true, limit: "50mb" }));
-
 app.use(cookieParser());
 
 app.use("/api/v1/auth", authRoutes);
@@ -42,6 +43,7 @@ app.use("/api/v1/file-conversion", conversionRoutes);
 app.use("/api/v1/support", supportRoutes);
 
 const PORT = process.env.PORT || 4000;
+
 connectDB().then(() => {
   app.listen(PORT, () => {
     logger.info(`🚀 Server running at http://localhost:${PORT}`);

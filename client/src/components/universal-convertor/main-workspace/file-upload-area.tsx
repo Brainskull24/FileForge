@@ -58,7 +58,7 @@ export function FileUploadArea({
           </p>
           <input
             type="file"
-            multiple={false}
+            multiple={true}
             accept={
               "fileTypes" in currentTool && currentTool.fileTypes
                 ? currentTool.fileTypes.join(",")

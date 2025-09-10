@@ -45,8 +45,7 @@ export function FileProcessor({
 }: FileProcessorProps) {
   const handleFiles = useCallback(
     (files: File[]) => {
-      const file = files[0]; // Only 1 file allowed
-      setUploadedFiles([file]);
+      setUploadedFiles(files);
     },
     [setUploadedFiles]
   );
@@ -60,8 +59,6 @@ export function FileProcessor({
   const handleFileProcess = () => {
     if (uploadedFiles.length === 0) return;
 
-    const file = uploadedFiles[0];
-
     // Encoding tools (special local processing)
     const encodingTools = [
       "file-to-base64",
@@ -74,21 +71,20 @@ export function FileProcessor({
 
     if (encodingTools.includes(selectedTool)) {
       // Local encoding logic
-      FileEncodingLogic.encodeFiles([file], selectedTool)
+      FileEncodingLogic.encodeFiles(uploadedFiles, selectedTool)
         .then((result: string) => {
           const lines = result.split("\n");
           const cleanStart = lines.findIndex((l) => l === "Clean Base64:");
           const cleanBase64 =
-            cleanStart !== -1
-              ? lines.slice(cleanStart + 1).join("\n")
-              : "";
+            cleanStart !== -1 ? lines.slice(cleanStart + 1).join("\n") : "";
 
-          setFileMeta({
-            name: file.name,
-            size: formatFileSize(file.size),
-            type: file.type || "unknown",
-          });
-
+          for (const file of uploadedFiles) {
+            setFileMeta({
+              name: file.name,
+              size: formatFileSize(file.size),
+              type: file.type || "unknown",
+            });
+          }
           setBase64Output(cleanBase64);
           setShowEncodingOutput(true);
         })
@@ -101,7 +97,7 @@ export function FileProcessor({
       const operation =
         selectedFormat || currentTool?.formats?.supported?.[0]?.id || "process";
 
-      onFileProcess([file], operation);
+      onFileProcess(uploadedFiles, operation);
     }
   };
 
@@ -194,7 +190,9 @@ export function FileProcessor({
       {uploadedFiles.length > 0 && (
         <UploadedFilesList
           uploadedFiles={uploadedFiles.map((file) => ({ file }))}
-          onRemoveFile={() => setUploadedFiles([])}
+          onRemoveFile={(index) =>
+            setUploadedFiles((prev) => prev.filter((_, i) => i !== index))
+          }
         />
       )}
     </div>
