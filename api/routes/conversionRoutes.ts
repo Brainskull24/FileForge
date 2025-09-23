@@ -2,8 +2,14 @@ import { Router } from "express";
 import axios from "axios";
 import multer from "multer";
 import FormData from "form-data";
+import { Worker } from "bullmq";
+import IORedis from "ioredis";
 import logger from "../utils/logger";
 
+const connection = new IORedis("redis://localhost:6379", {
+  maxRetriesPerRequest: null,
+  enableReadyCheck: false,
+});
 
 const router = Router();
 const upload = multer();
@@ -66,5 +72,23 @@ router.post("/:operation", upload.single("file"), async (req, res) => {
     });
   }
 });
+
+const worker = new Worker(
+  "file-queue",
+  async (job) => {
+    console.log("Processing job:", job.id, job.data);
+    return { success: true, result: `Processed ${job.data.fileName}` };
+  },
+  { connection }
+);
+
+worker.on("completed", (job) => {
+  console.log(`Job ${job.id} completed!`);
+});
+
+worker.on("failed", (job, err) => {
+  console.error(`Job ${job?.id} failed:`, err);
+});
+
 
 export default router;

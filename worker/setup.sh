@@ -11,4 +11,5 @@ echo "Installing dependencies..."
 pip install -r requirements.txt
 
 echo "Running the FastAPI server..."
-uvicorn app.main:app --reload
+uvicorn app.main:app --workers 8
+# uvicorn app.main:app --reload 

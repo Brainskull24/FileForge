@@ -114,10 +114,12 @@ export function UniversalConverterDashboard() {
       return;
     }
 
-    for (const file of files) {
-      const job = addNewJob(file, operation);
-      await uploadFile(job, file, operation);
-    }
+    await Promise.all(
+      files.map(async (file) => {
+        const job = addNewJob(file, operation);
+        await uploadFile(job, file, operation);
+      })
+    );
   };
 
   return (

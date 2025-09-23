@@ -11,6 +11,7 @@ import pdfRoutes from "./routes/pdfRoutes";
 import conversionRoutes from "./routes/conversionRoutes";
 import supportRoutes from "./routes/supportRoutes";
 import logger from "./utils/logger";
+import { fileQueue } from "./queues/fileQueue";
 import { connectDB } from "./config/db";
 
 dotenv.config();
@@ -18,7 +19,7 @@ const app = express();
 
 const allowedOrigins = [
   "https://fileforge-v1.vercel.app",
-  "http://localhost:5173"
+  "http://localhost:5173",
 ];
 
 app.use(
@@ -41,6 +42,17 @@ app.use("/api/v1/account", accountRoutes);
 app.use("/api/v1/pdf", pdfRoutes);
 app.use("/api/v1/file-conversion", conversionRoutes);
 app.use("/api/v1/support", supportRoutes);
+
+app.post("/process", async (req, res) => {
+  const { fileName, operation } = req.body;
+
+  const job = await fileQueue.add("convert-file", {
+    fileName,
+    operation,
+  });
+
+  res.json({ jobId: job.id, status: "queued" });
+});
 
 const PORT = process.env.PORT || 4000;
 
