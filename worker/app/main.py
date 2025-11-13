@@ -6,6 +6,11 @@ app = FastAPI()
 
 app.include_router(convert_routes.router, prefix="/api/v1/file-conversion")
 
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for monitoring"""
+    return {"status": "healthy", "service": "file-conversion-worker"}
+
 @app.on_event("startup")
 async def startup_event():
     await MongoDB.connect()

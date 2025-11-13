@@ -3,7 +3,7 @@ import pandas as pd
 from pathlib import Path
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
-from datetime import datetime
+from datetime import datetime, timezone
 from app.config.db import MongoDB
 
 class ExcelConversion:
@@ -39,7 +39,7 @@ class ExcelConversion:
             "file_name": os.path.basename(file_path),
             "conversion_type": conversion,
             "output_type": output_type,
-            "timestamp": datetime.utcnow()
+            "timestamp": datetime.now(timezone.utc)
         })
 
     def to_csv(self, file_path: str) -> str:

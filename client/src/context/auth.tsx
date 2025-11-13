@@ -94,8 +94,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     try {
       await api.post("/auth/logout");
-    } catch (error) {
-      toast.error("Logout API error:" + error);
+    } catch (error: any) {
+      toast.error(`Logout error: ${error?.message || 'Unknown error'}`);
     } finally {
       setUser(null);
       localStorage.removeItem("user");
@@ -118,8 +118,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           credits: data?.user?.credits ?? data?.credits ?? prev.credits ?? 0,
         };
       });
-    } catch (error) {
-      toast.error("Failed to deduct credits" + error);
+    } catch (error: any) {
+      toast.error(`Failed to deduct credits: ${error?.message || 'Unknown error'}`);
     }
   };
 

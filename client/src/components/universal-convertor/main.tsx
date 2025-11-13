@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SidebarProvider } from "../ui/sidebar";
 import { AppSidebar } from "./app-sidebar";
 import { DashboardHeader } from "./dashboard-header";
@@ -25,6 +25,7 @@ export function UniversalConverterDashboard() {
   const [selectedTool, setSelectedTool] = useState<string | null>(null);
   const [processingJobs, setProcessingJobs] = useState<ProcessingJob[]>([]);
   const { user, deductCredits } = useAuth();
+  const CONVERSION_CREDIT_COST = 10;
 
   const addNewJob = (file: File, operation: string): ProcessingJob => {
     const job: ProcessingJob = {
@@ -101,7 +102,7 @@ export function UniversalConverterDashboard() {
         downloadUrl,
         fileName: downloadName,
       });
-      deductCredits(1, 10);
+      deductCredits(1, CONVERSION_CREDIT_COST);
     } catch (error) {
       toast.error(`Failed to process ${job.fileName}` + error);
       updateJob(job.id, { status: "failed" });
@@ -109,7 +110,7 @@ export function UniversalConverterDashboard() {
   };
 
   const handleFileProcess = async (files: File[], operation: string) => {
-    if (!user?.credits || user.credits < 10) {
+    if (!user?.credits || user.credits < CONVERSION_CREDIT_COST) {
       toast.error("You don't have enough credits to perform this operation!");
       return;
     }
@@ -121,6 +122,17 @@ export function UniversalConverterDashboard() {
       })
     );
   };
+
+  // Cleanup blob URLs on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      processingJobs.forEach((job) => {
+        if (job.downloadUrl) {
+          URL.revokeObjectURL(job.downloadUrl);
+        }
+      });
+    };
+  }, [processingJobs]);
 
   return (
     <SidebarProvider defaultOpen={true}>

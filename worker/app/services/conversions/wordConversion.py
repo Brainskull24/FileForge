@@ -1,17 +1,13 @@
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 from pathlib import Path
+import sys
 
 import mammoth # type: ignore
 import pypandoc # type: ignore
 from docx import Document # type: ignore
-import sys
 from docx2pdf import convert as docx2pdf_convert # type: ignore
-from pathlib import Path
-import sys
-from pathlib import Path
-from typing import Optional
 
 from app.config.db import MongoDB
 
@@ -41,7 +37,7 @@ class WordConversion:
             "file_name": os.path.basename(file_path),
             "conversion_type": conversion,
             "output_type": output_type,
-            "timestamp": datetime.utcnow()
+            "timestamp": datetime.now(timezone.utc)
         })
 
     def to_pdf(self, file_path: str) -> Optional[str]:

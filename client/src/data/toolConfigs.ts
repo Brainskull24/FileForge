@@ -1,3 +1,4 @@
+// Extension map for file conversions - all extensions include dot prefix for consistency
 export const extMap: Record<string, string> = {
   "pdf-to-html": ".html",
   "pdf-to-word": ".docx",

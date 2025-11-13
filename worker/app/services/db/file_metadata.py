@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from app.config.db import MongoDB
 
 async def save_file_metadata(file_name, file_size, mime_type, file_hash, metadata=None):
@@ -28,6 +28,6 @@ async def save_file_metadata(file_name, file_size, mime_type, file_hash, metadat
         "file_hash": file_hash,
         "upload_source": "direct",
         "expires_at": None,
-        "created_at": datetime.utcnow(),
+        "created_at": datetime.now(timezone.utc),
         "metadata": metadata or {}
     })

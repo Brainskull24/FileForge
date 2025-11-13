@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from bs4 import BeautifulSoup
 import markdown2
@@ -43,7 +43,7 @@ class MarkdownConversion:
             "file_name": os.path.basename(file_path),
             "conversion_type": conversion,
             "output_type": output_type,
-            "timestamp": datetime.utcnow()
+            "timestamp": datetime.now(timezone.utc)
         })
 
     def to_html(self, file_path: str) -> str:

@@ -1,9 +1,9 @@
 from app.config.db import MongoDB
-from datetime import datetime
+from datetime import datetime, timezone
 
 async def save_file_metadata(data: dict):
     db = MongoDB.get_db()
-    data["created_at"] = datetime.utcnow()
+    data["created_at"] = datetime.now(timezone.utc)
     await db["files"].insert_one(data)
 
 async def ensure_file_indexes():

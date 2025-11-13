@@ -106,17 +106,20 @@ export const updateCredits = async (
   res: Response
 ): Promise<void> => {
   const { creditsDeducted } = req.body;
-  const user = await UserModel.findById(req.user?.id);
+  
+  // Use findByIdAndUpdate with atomic operation to prevent race conditions
+  const user = await UserModel.findByIdAndUpdate(
+    req.user?.id,
+    { $inc: { credits: -creditsDeducted } },
+    { new: true }
+  );
 
   if (!user) {
     res.status(404).json({ error: "User not found" });
     return;
   }
 
-  user.credits = (user.credits || 0) - creditsDeducted;
-  await user.save();
-
-  res.json({ message: "Credits added", credits: user.credits });
+  res.json({ message: "Credits deducted", credits: user.credits });
 };
 
 export const deleteUserAvatar = async (

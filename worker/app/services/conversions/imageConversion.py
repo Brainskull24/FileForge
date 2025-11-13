@@ -1,9 +1,10 @@
 import os
 from PIL import Image
 from pathlib import Path
-from datetime import datetime
-import pytesseract
+from datetime import datetime, timezone
 from app.config.db import MongoDB
+
+# Note: pytesseract removed as it was unused
 
 
 class ImageConversion:
@@ -40,7 +41,7 @@ class ImageConversion:
             "file_name": os.path.basename(file_path),
             "conversion_type": conversion,
             "output_type": output_type,
-            "timestamp": datetime.utcnow()
+            "timestamp": datetime.now(timezone.utc)
         })
 
     def to_pdf(self, file_path: str) -> str:

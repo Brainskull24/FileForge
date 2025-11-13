@@ -54,7 +54,30 @@ app.post("/process", async (req, res) => {
   res.json({ jobId: job.id, status: "queued" });
 });
 
+// Validate required environment variables
+const requiredEnvVars = ["MONGODB_URI", "JWT_SECRET"];
+const missingEnvVars = requiredEnvVars.filter((varName) => !process.env[varName]);
+
+if (missingEnvVars.length > 0) {
+  logger.error(`Missing required environment variables: ${missingEnvVars.join(", ")}`);
+  process.exit(1);
+}
+
 const PORT = process.env.PORT || 4000;
+
+// Health check endpoint
+app.get("/health", (_req, res) => {
+  res.json({ status: "healthy", service: "fileforge-api" });
+});
+
+// Graceful shutdown handler
+const gracefulShutdown = (signal: string) => {
+  logger.info(`${signal} received. Starting graceful shutdown...`);
+  process.exit(0);
+};
+
+process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+process.on("SIGINT", () => gracefulShutdown("SIGINT"));
 
 connectDB().then(() => {
   app.listen(PORT, () => {
