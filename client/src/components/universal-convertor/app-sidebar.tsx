@@ -25,11 +25,13 @@ import {
   Settings,
   ChevronDown,
   ArrowLeft,
+  Sparkles,
 } from "lucide-react";
 import {
   decodingTools,
   encodingTools,
   fileConversionCategories,
+  aiTools,
 } from "../../data/sidebarConfigs";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -53,6 +55,7 @@ export function AppSidebar({ selectedTool, onToolSelect }: AppSidebarProps) {
     decoding: true,
     encoding: true,
     fileConversion: true,
+    aiTools: true,
     advanced: false,
   });
 
@@ -143,6 +146,12 @@ export function AppSidebar({ selectedTool, onToolSelect }: AppSidebarProps) {
           "File Conversion",
           FileText,
           fileConversionCategories
+        )}
+        {renderCollapsibleSection(
+          "aiTools",
+          "AI Tools",
+          Sparkles,
+          aiTools
         )}
       </SidebarContent>
 

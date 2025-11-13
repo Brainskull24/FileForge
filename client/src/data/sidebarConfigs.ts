@@ -9,6 +9,7 @@ import {
   QrCode,
   Type,
   Database,
+  Sparkles,
 } from "lucide-react";
 
 export const decodingTools = [
@@ -81,5 +82,15 @@ export const fileConversionCategories = [
     name: "Markdown Conversion",
     Icon: FileText,
     description: "Convert from Markdown formats",
+  },
+];
+
+// AI Tools
+export const aiTools = [
+  {
+    id: "ai-summarizer",
+    name: "AI Summarizer",
+    Icon: Sparkles,
+    description: "Summarize documents with AI",
   },
 ];

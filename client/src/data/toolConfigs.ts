@@ -362,6 +362,22 @@ export const toolConfigs: Record<string, BaseToolConfig> = {
       ],
     },
   },
+
+  "ai-summarizer": {
+    name: "AI Summarizer",
+    description: "Upload documents (PDF, DOCX, TXT) and get AI-powered summaries using Gemini",
+    type: "file",
+    category: "ai-tools",
+    acceptFiles: true,
+    fileTypes: [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "text/plain",
+      "text/markdown",
+      ".md",
+    ],
+  },
 };
 
 // Helper function to get tools by category

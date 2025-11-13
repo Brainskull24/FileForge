@@ -7,6 +7,7 @@ import { toolConfigs } from "../../../data/toolConfigs";
 import { Welcome } from "../welcome-page";
 import { TextProcessor } from "./text-processor";
 import { FileProcessor } from "./file-processor";
+import { AISummarizer } from "./ai-summarizer";
 import { useAuth } from "../../../context/auth";
 
 interface MainWorkspaceProps {
@@ -137,7 +138,11 @@ export function MainWorkspace({
           />
         )}
 
-        {currentTool.type === "file" && (
+        {currentTool.type === "file" && selectedTool === "ai-summarizer" && (
+          <AISummarizer currentTool={currentTool} />
+        )}
+
+        {currentTool.type === "file" && selectedTool !== "ai-summarizer" && (
           <FileProcessor
             selectedTool={selectedTool}
             currentTool={currentTool}
