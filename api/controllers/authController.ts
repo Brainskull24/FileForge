@@ -66,7 +66,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   if (!user?.password && user?.provider) {
     res
       .status(400)
-      .json({ error: `Use ${user?.provider} to login for this account` });
+      .json({ error: `Use ${user?.provider || 'social login'} to login for this account` });
     return;
   }
 
@@ -211,8 +211,7 @@ export const verifyEmail = async (
     const acceptHeader = req.headers["accept"];
     if (acceptHeader && acceptHeader.includes("application/json")) {
       res.status(404).json({ error: "Invalid or expired token" });
-    } else {
-      res.redirect(`${process.env.VITE_FE_URL}/verify-failed`);
+      return;
     }
 
     res.redirect(`${FRONTEND_URL}/verify-failed`);

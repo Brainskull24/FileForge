@@ -2,14 +2,7 @@ import { Router } from "express";
 import axios from "axios";
 import multer from "multer";
 import FormData from "form-data";
-import { Worker } from "bullmq";
-import IORedis from "ioredis";
 import logger from "../utils/logger";
-
-const connection = new IORedis("redis://localhost:6379", {
-  maxRetriesPerRequest: null,
-  enableReadyCheck: false,
-});
 
 const router = Router();
 const upload = multer();
@@ -18,13 +11,22 @@ router.post("/:operation", upload.single("file"), async (req, res) => {
   try {
     if (!req.file) {
       res.status(400).json({ message: "File is required" });
+      return;
     }
 
     const operation = req.params.operation;
+    
+    // Validate operation format
+    if (!operation || !operation.includes("-to-")) {
+      res.status(400).json({ message: "Invalid operation format. Expected format: 'source-to-target'" });
+      return;
+    }
+    
     const resource = operation.split("-to-")[0];
 
     if (!resource) {
       res.status(400).json({ message: "Invalid operation format" });
+      return;
     }
 
     // Prepare form data
@@ -65,7 +67,7 @@ router.post("/:operation", upload.single("file"), async (req, res) => {
     // Pipe the file stream directly to the frontend response
     pythonResponse.data.pipe(res);
   } catch (error: any) {
-    logger.error("Error calling Python server:", error.message);
+    logger.error("Error calling Python server:", error);
     res.status(500).json({
       message: "Conversion failed",
       error: error.message,
@@ -73,22 +75,8 @@ router.post("/:operation", upload.single("file"), async (req, res) => {
   }
 });
 
-const worker = new Worker(
-  "file-queue",
-  async (job) => {
-    console.log("Processing job:", job.id, job.data);
-    return { success: true, result: `Processed ${job.data.fileName}` };
-  },
-  { connection }
-);
-
-worker.on("completed", (job) => {
-  console.log(`Job ${job.id} completed!`);
-});
-
-worker.on("failed", (job, err) => {
-  console.error(`Job ${job?.id} failed:`, err);
-});
-
+// Note: Worker code removed as it's not currently being used for actual job processing
+// If you need queue-based processing in the future, implement it properly with job creation
+// and worker processing logic
 
 export default router;

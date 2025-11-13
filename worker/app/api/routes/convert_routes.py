@@ -209,7 +209,10 @@ async def convert_html(
         else:
             raise HTTPException(status_code=400, detail="Invalid conversion type.")
     finally:
-        os.remove(temp_path)
+        try:
+            os.remove(temp_path)
+        except Exception:
+            pass  # File already deleted or doesn't exist
 
 @router.post("/excel")
 async def convert_excel(
@@ -253,7 +256,10 @@ async def convert_excel(
             raise HTTPException(status_code=400, detail="Invalid conversion_type")
 
     finally:
-        os.remove(temp_path)
+        try:
+            os.remove(temp_path)
+        except Exception:
+            pass  # File already deleted or doesn't exist
 
 @router.post("/image")
 async def convert_image(
@@ -291,4 +297,7 @@ async def convert_image(
 
         raise HTTPException(status_code=400, detail="Unsupported image conversion type.")
     finally:
-        os.remove(temp_path)
+        try:
+            os.remove(temp_path)
+        except Exception:
+            pass  # File already deleted or doesn't exist
