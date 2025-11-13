@@ -1,11 +1,8 @@
 from dotenv import load_dotenv
 import os
-
-load_dotenv() 
 from motor.motor_asyncio import AsyncIOMotorClient
 from dotenv import load_dotenv
-
-load_dotenv()
+load_dotenv() 
 
 class MongoDB:
     _client = None
