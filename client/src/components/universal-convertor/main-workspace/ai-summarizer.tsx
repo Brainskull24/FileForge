@@ -73,7 +73,7 @@ export function AISummarizer({ currentTool }: AISummarizerProps) {
 
   const generateSummary = async (text: string): Promise<string> => {
     try {
-      const apiKey = "AIzaSyABXBmAeY5TT8B6l13KtO0rcEfx8aRhj44";
+      const apiKey = import.meta.env.VITE_GEMINI_API;
       if (!apiKey) {
         throw new Error("Gemini API key not configured");
       }
